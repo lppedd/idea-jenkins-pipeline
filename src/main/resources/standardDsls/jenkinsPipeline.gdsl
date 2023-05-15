@@ -1,0 +1,407 @@
+package standardDsls
+
+final rootContext = context(pathRegexp: /.*\/Jenkinsfile|.*\/.*\.groovy/)
+
+// File level
+// https://www.jenkins.io/doc/book/pipeline/syntax/
+contributor([rootContext]) {
+  property(name: 'env', type: Object, doc: 'jpgdsl.env')
+  property(name: 'currentBuild', type: Object, doc: 'jpgdsl.currentBuild')
+
+  // Parent Pipeline closure
+  method(name: 'pipeline', type: void, params: [body: Closure], doc: 'jpgdsl.pipeline')
+
+  if (isPropertyOf('env')) {
+    property(name: 'BRANCH_NAME', type: String, doc: 'For a multibranch project, this will be set to the name of the branch being built, for example in case you wish to deploy to production from master but not from feature branches; if corresponding to some kind of change request, the name is generally arbitrary (refer to CHANGE_ID and CHANGE_TARGET)')
+    property(name: 'CHANGE_ID', type: String, doc: 'For a multibranch project corresponding to some kind of change request, this will be set to the change ID, such as a pull request number, if supported; else unset')
+    property(name: 'CHANGE_URL', type: String, doc: 'For a multibranch project corresponding to some kind of change request, this will be set to the change URL, if supported; else unset')
+    property(name: 'CHANGE_TITLE', type: String, doc: 'For a multibranch project corresponding to some kind of change request, this will be set to the title of the change, if supported; else unset')
+    property(name: 'CHANGE_AUTHOR', type: String, doc: 'For a multibranch project corresponding to some kind of change request, this will be set to the username of the author of the proposed change, if supported; else unset')
+    property(name: 'CHANGE_AUTHOR_DISPLAY_NAME', type: String, doc: 'For a multibranch project corresponding to some kind of change request, this will be set to the human name of the author, if supported; else unset')
+    property(name: 'CHANGE_AUTHOR_EMAIL', type: String, doc: 'For a multibranch project corresponding to some kind of change request, this will be set to the email address of the author, if supported; else unset')
+    property(name: 'CHANGE_TARGET', type: String, doc: 'rFo a multibranch project corresponding to some kind of change request, this will be set to the target or base branch to which the change could be merged, if supported; else unset')
+    property(name: 'BUILD_NUMBER', type: String, doc: 'The current build number, such as "153"')
+    property(name: 'BUILD_ID', type: String, doc: 'The current build ID, identical to BUILD_NUMBER for builds created in 1.597+, but a YYYY-MM-DD_hh-mm-ss timestamp for older builds')
+    property(name: 'BUILD_DISPLAY_NAME', type: String, doc: 'The display name of the current build, which is something like "#153" by default')
+    property(name: 'JOB_NAME', type: String, doc: 'Name of the project of this build, such as "foo" or "foo/bar"')
+    property(name: 'JOB_BASE_NAME', type: String, doc: 'Short Name of the project of this build stripping off folder paths, such as "foo" for "bar/foo"')
+    property(name: 'BUILD_TAG', type: String, doc: 'String of "jenkins-${JOB_NAME}-${BUILD_NUMBER}". All forward slashes (/) in the JOB_NAME are replaced with dashes (-). Convenient to put into a resource file, a jar file, etc for easier identification')
+    property(name: 'EXECUTOR_NUMBER', type: String, doc: 'The unique number that identifies the current executor (among executors of the same machine) that’s carrying out this build. This is the number you see in the "build executor status", except that the number starts from 0, not 1')
+    property(name: 'NODE_NAME', type: String, doc: 'Name of the agent if the build is on an agent, or "master" if run on master')
+    property(name: 'NODE_LABELS', type: String, doc: 'Whitespace-separated list of labels that the node is assigned')
+    property(name: 'WORKSPACE', type: String, doc: 'The absolute path of the directory assigned to the build as a workspace')
+    property(name: 'JENKINS_HOME', type: String, doc: 'The absolute path of the directory assigned on the master node for Jenkins to store data')
+    property(name: 'JENKINS_URL', type: String, doc: 'Full URL of Jenkins, like http://server:port/jenkins/ (note: only available if Jenkins URL set in system configuration)')
+    property(name: 'BUILD_URL', type: String, doc: 'Full URL of this build, like http://server:port/jenkins/job/foo/15/ (Jenkins URL must be set)')
+    property(name: 'JOB_URL', type: String, doc: 'Full URL of this job, like http://server:port/jenkins/job/foo/ (Jenkins URL must be set)')
+  }
+
+  if (isPropertyOf('currentBuild')) {
+    property(name: 'number', type: Integer, doc: 'jpgdsl.currentBuild.number')
+    property(name: 'result', type: String, doc: 'jpgdsl.currentBuild.result')
+    property(name: 'currentResult', type: String, doc: 'jpgdsl.currentBuild.currentResult')
+    property(name: 'displayName', type: String, doc: 'normally #123 but sometimes set to, e.g., an SCM commit identifier')
+    property(name: 'fullDisplayName', type: String, doc: 'normally #123 but sometimes set to, e.g., an SCM commit identifier')
+    property(name: 'projectName', type: String, doc: 'normally #123 but sometimes set to, e.g., an SCM commit identifier')
+    property(name: 'fullProjectName', type: String, doc: 'normally #123 but sometimes set to, e.g., an SCM commit identifier')
+    property(name: 'description', type: String, doc: 'additional information about the build')
+    property(name: 'id', type: String, doc: 'normally number as a string')
+    property(name: 'timeInMillis', type: long, doc: 'time since the epoch when the build was scheduled')
+    property(name: 'startTimeInMillis', type: long, doc: 'time since the epoch when the build started running')
+    property(name: 'duration', type: long, doc: 'duration of the build in milliseconds')
+    property(name: 'durationString', type: String, doc: 'a human-readable representation of the build duration')
+    property(name: 'previousBuild', type: Object, doc: 'another similar object, or null')
+    property(name: 'nextBuild', type: Object, doc: 'another similar object, or null')
+    property(name: 'absoluteUrl', type: String, doc: 'URL of build index page')
+    property(name: 'buildVariables', type: Map, doc: 'for a non-Pipeline downstream build, offers access to a map of defined build variables; for a Pipeline downstream build, any variables set globally on env')
+    property(name: 'changeSets', type: String, doc: 'a list of changesets coming from distinct SCM checkouts; each has a kind and is a list of commits; each commit has a commitId, timestamp, msg, author, and affectedFiles each of which has an editType and path; the value will not generally be Serializable so you may only access it inside a method marked @NonCPS')
+    property(name: 'rawBuild', type: String, doc: 'a hudson.model.Run with further APIs, only for trusted libraries or administrator-approved scripts outside the sandbox; the value will not be Serializable so you may only access it inside a method marked @NonCPS')
+
+    method(name: 'resultIsBetterOrEqualTo', type: boolean, params: [buildStatus: 'String'], doc: 'Compares the current build result to the provided result string (SUCCESS, UNSTABLE, or FAILURE) and returns true if the current build result is better than or equal to the provided result.')
+    method(name: 'resultIsWorseOrEqualTo', type: boolean, params: [buildStatus: 'String'], doc: 'Compares the current build result to the provided result string (SUCCESS, UNSTABLE, or FAILURE) and returns true if the current build result is worse than or equal to the provided result.')
+  }
+
+  if (isInsideMethod()) {
+    method(name: 'timestamp', type: Object, params: [body: Closure], doc: 'Timestamps')
+    method(name: 'bat', type: Object, params: [script: String], doc: 'Windows Batch Script')
+    method(name: 'bat', type: Object, namedParams: [parameter(name: 'script', type: String), parameter(name: 'encoding', type: String), parameter(name: 'returnStatus', type: Boolean), parameter(name: 'returnStdout', type: Boolean)], doc: 'Windows Batch Script')
+    method(name: 'checkout', type: Object, params: [scm: Map], doc: 'General SCM')
+    method(name: 'checkout', type: Object, namedParams: [parameter(name: 'scm', type: Map), parameter(name: 'changelog', type: Boolean), parameter(name: 'poll', type: Boolean)], doc: 'General SCM')
+    method(name: 'cleanWs', doc: 'Clean workspace')
+    method(name: 'deleteDir', type: Object, params: [:], doc: 'Recursively delete the current directory from the workspace')
+    method(name: 'dir', type: Object, params: [path: String, body: Closure], doc: 'Change current directory')
+    method(name: 'fileExists', type: Object, params: [file: String], doc: 'Verify if file exists in workspace')
+    method(name: 'git', type: Object, params: [url: String], doc: 'Git')
+    method(name: 'git', type: Object, namedParams: [parameter(name: 'url', type: String), parameter(name: 'branch', type: String), parameter(name: 'changelog', type: Boolean), parameter(name: 'credentialsId', type: String), parameter(name: 'poll', type: Boolean)], doc: 'Git')
+    method(name: 'junit', type: Object, params: [testResults: String], doc: 'Archive JUnit-formatted test results')
+    method(name: 'junit', type: Object, namedParams: [parameter(name: 'testResults', type: String), parameter(name: 'allowEmptyResults', type: Boolean), parameter(name: 'healthScaleFactor', type: 'double'), parameter(name: 'keepLongStdio', type: Boolean), parameter(name: 'testDataPublishers', type: Map)], doc: 'Archive JUnit-formatted test results')
+    method(name: 'load', type: Object, params: [path: String], doc: 'Evaluate a Groovy source file into the Pipeline script')
+    method(name: 'powershell', type: Object, params: [script: String], doc: 'PowerShell Script')
+    method(name: 'powershell', type: Object, namedParams: [parameter(name: 'script', type: String), parameter(name: 'encoding', type: String), parameter(name: 'returnStatus', type: Boolean), parameter(name: 'returnStdout', type: Boolean)], doc: 'PowerShell Script')
+    method(name: 'publishHTML', type: Object, params: [target: Map], doc: 'Publish HTML reports')
+    method(name: 'pwd', type: Object, params: [:], doc: 'Determine current directory')
+    method(name: 'pwd', type: Object, namedParams: [parameter(name: 'tmp', type: Boolean)], doc: 'Determine current directory')
+    method(name: 'readFile', type: Object, params: [file: String], doc: 'Read file from workspace')
+    method(name: 'readFile', type: Object, namedParams: [parameter(name: 'file', type: String), parameter(name: 'encoding', type: String)], doc: 'Read file from workspace')
+    method(name: 'sh', type: Object, params: [script: String], doc: 'Shell Script')
+    method(name: 'sh', type: Object, namedParams: [parameter(name: 'script', type: String), parameter(name: 'encoding', type: String), parameter(name: 'returnStatus', type: Boolean), parameter(name: 'returnStdout', type: Boolean)], doc: 'Shell Script')
+    method(name: 'stash', type: Object, params: [name: String], doc: 'Stash some files to be used later in the build')
+    method(name: 'stash', type: Object, namedParams: [parameter(name: 'name', type: String), parameter(name: 'allowEmpty', type: Boolean), parameter(name: 'excludes', type: String), parameter(name: 'includes', type: String), parameter(name: 'useDefaultExcludes', type: Boolean)], doc: 'Stash some files to be used later in the build')
+    method(name: 'tm', type: Object, params: [stringWithMacro: String], doc: 'Expand a string containing macros')
+    method(name: 'unstash', type: Object, params: [name: String], doc: 'Restore files previously stashed')
+    method(name: 'validateDeclarativePipeline', type: Object, params: [path: String], doc: 'Validate a file containing a Declarative Pipeline')
+    method(name: 'wrap', type: Object, params: [delegate: Map, body: Closure], doc: 'General Build Wrapper')
+    method(name: 'writeFile', type: Object, namedParams: [parameter(name: 'file', type: String), parameter(name: 'text', type: String), parameter(name: 'encoding', type: String)], doc: 'Write file to workspace')
+    method(name: 'archive', type: Object, params: [includes: String], doc: 'Advanced/Deprecated Archive artifacts')
+    method(name: 'archive', type: Object, namedParams: [parameter(name: 'includes', type: String), parameter(name: 'excludes', type: String)], doc: 'Archive artifacts')
+    method(name: 'dockerFingerprintFrom', type: Object, namedParams: [parameter(name: 'dockerfile', type: String), parameter(name: 'image', type: String), parameter(name: 'buildArgs', type: Map), parameter(name: 'toolName', type: String)], doc: 'Record trace of a Docker image used in FROM')
+    method(name: 'unarchive', type: Object, params: [:], doc: 'Advanced/Deprecated Copy archived artifacts into the workspace')
+    method(name: 'unarchive', type: Object, namedParams: [parameter(name: 'mapping', type: Map)], doc: 'Copy archived artifacts into the workspace')
+    method(name: 'withDockerContainer', type: Object, params: [image: String, body: Closure], doc: 'Advanced/Deprecated Run build steps inside a Docker container')
+    method(name: 'withDockerContainer', type: Object, params: [body: Closure], namedParams: [parameter(name: 'image', type: String), parameter(name: 'args', type: String), parameter(name: 'toolName', type: String)], doc: 'Run build steps inside a Docker container')
+    method(name: 'withDockerRegistry', type: Object, params: [registry: Map, body: Closure], doc: 'Advanced/Deprecated Sets up Docker registry endpoint')
+    method(name: 'withDockerServer', type: Object, params: [server: Map, body: Closure], doc: 'Advanced/Deprecated Sets up Docker server endpoint')
+    method(name: 'aliyunOSSUpload', type: Object, doc: 'Upload files or directories to aliyun OSS', namedParams: [parameter(name: 'endpoint', type: String), parameter(name: 'accessKeyId', type: String), parameter(name: 'accessKeySecret', type: String), parameter(name: 'bucketName', type: String), parameter(name: 'localPath', type: String), parameter(name: 'remotePath', type: String), parameter(name: 'maxRetries', type: String)])
+    method(name: 'archiveArtifacts', type: Object, namedParams: [parameter(name: 'artifacts', type: String, doc: 'Use comma separator to set a list of patterns'), parameter(name: 'excludes', type: String, doc: 'Use comma separator to set a list of patterns'), parameter(name: 'allowEmptyArchive', type: Boolean), parameter(name: 'caseSensitive', type: Boolean), parameter(name: 'defaultExcludes', type: Boolean), parameter(name: 'fingerprint', type: Boolean), parameter(name: 'followSymlinks', type: Boolean), parameter(name: 'onlyIfSuccessful', type: Boolean)])
+    method(name: 'buildName', type: Object, params: [buildName: String], doc: 'Build name')
+    method(name: 'buildDescription', type: Object, params: [buildDescription: String], doc: 'Build description')
+    method(name: 'publishIssues', type: Object, params: [issues: List], doc: 'Publish issues created by a static analysis scan')
+    method(name: 'publishIssues', type: Object, namedParams: [parameter(name: 'issues', type: 'java.util.List'), parameter(name: 'failOnError', type: 'boolean')])
+    method(name: 'scanForIssues', type: 'Object', params: [:], doc: 'Scan files or the console log for warnings or issues')
+    method(name: 'scanForIssues', type: 'Object', namedParams: [parameter(name: 'blameDisabled', type: 'boolean'), parameter(name: 'filters', type: 'java.util.List')])
+  }
+}
+
+final closures = context(scope: closureScope(null))
+
+contributor([closures]) {
+  if (isEnclosedBy(['pipeline', 'stage'])) {
+    method(name: 'agent', type: void, params: [body: Closure], doc: 'jpgdsl.agent')
+    method(name: 'agent', type: void, params: [type: Object], doc: 'jpgdsl.agent')
+    method(name: 'tools', type: void, params: [body: Closure], doc: 'jpgdsl.tools')
+    method(name: 'options', type: void, params: [body: Closure], doc: 'jpgdsl.options')
+    method(name: 'environment', type: void, params: [body: Closure], doc: 'jpgdsl.environment')
+    method(name: 'stages', type: void, params: [body: Closure], doc: 'jpgdsl.stages')
+    method(name: 'post', type: void, params: [body: Closure], doc: 'jpgdsl.post')
+  }
+
+  if (isEnclosedBy(['pipeline', 'input'])) {
+    method(name: 'parameters', type: void, params: [body: Closure], doc: 'jpgdsl.parameters')
+  }
+
+  // Things that can be inside a pipeline
+  if (isEnclosedBy(['pipeline'])) {
+    method(name: 'triggers', type: void, params: [body: Closure], doc: 'Build triggers')
+    method(name: 'ansiColor', type: Object, params: [colorMapName: String], doc: 'Color ANSI Console Output')
+    method(name: 'jiraComment', type: Object, namedParams: [parameter(name: 'issueKey', type: String), parameter(name: 'body', type: String)], doc: 'JIRA: Add a comment to issue(s)')
+    method(name: 'jiraIssueSelector', type: Object, params: [:], doc: 'JIRA: Issue selector')
+    method(name: 'jiraIssueSelector', type: Object, namedParams: [parameter(name: 'issueSelector', type: Map)], doc: 'JIRA: Issue selector')
+    method(name: 'jiraSearch', type: Object, params: [jql: String], doc: 'JIRA: Search issues')
+    method(name: 'build', type: Object, params: [job: String], doc: 'Build a job')
+    method(name: 'build', type: Object, namedParams: [parameter(name: 'job', type: String), parameter(name: 'parameters', type: List), parameter(name: 'propagate', type: Boolean), parameter(name: 'quietPeriod', type: Integer), parameter(name: 'wait', type: Boolean)], doc: 'Build a job')
+    method(name: 'ec2', type: Object, namedParams: [parameter(name: 'cloud', type: String), parameter(name: 'template', type: String)], doc: 'Cloud template provisioning')
+    method(name: 'error', type: Object, params: [message: String], doc: 'Error signal')
+    method(name: 'isUnix', type: Object, params: [:], doc: 'Checks if running on a Unix-like node')
+    method(name: 'library', type: Object, params: [identifier: String], doc: 'Load a shared library on the fly')
+    method(name: 'library', type: Object, namedParams: [parameter(name: 'identifier', type: String), parameter(name: 'changelog', type: 'java.lang.Boolean'), parameter(name: 'retriever', type: Map)], doc: 'Load a shared library on the fly')
+    method(name: 'libraryResource', type: Object, params: [resource: String], doc: 'Load a resource file from a shared library')
+    method(name: 'mail', type: Object, namedParams: [parameter(name: 'subject', type: String), parameter(name: 'body', type: String), parameter(name: 'bcc', type: String), parameter(name: 'cc', type: String), parameter(name: 'charset', type: String), parameter(name: 'from', type: String), parameter(name: 'mimeType', type: String), parameter(name: 'replyTo', type: String), parameter(name: 'to', type: String)], doc: 'Mail')
+    method(name: 'milestone', type: Object, params: [ordinal: Integer], doc: 'The milestone step forces all builds to go through in order')
+    method(name: 'milestone', type: Object, namedParams: [parameter(name: 'ordinal', type: Integer), parameter(name: 'label', type: String)], doc: 'The milestone step forces all builds to go through in order')
+    method(name: 'node', type: Object, params: [body: Closure], doc: 'Allocate node')
+    method(name: 'node', type: Object, params: [label: String, body: Closure], doc: 'Allocate node')
+    method(name: 'properties', type: Object, params: [properties: Map], doc: 'Set job properties')
+    method(name: 'readTrusted', type: Object, params: [path: String], doc: 'Read trusted file from SCM')
+    method(name: 'resolveScm', type: Object, namedParams: [parameter(name: 'source', type: Map), parameter(name: 'targets', type: Map), parameter(name: 'ignoreErrors', type: Boolean)], doc: 'Resolves an SCM from an SCM Source and a list of candidate target branch names')
+    method(name: 'retry', type: Object, params: [count: Integer, body: Closure], doc: 'Retry the body up to N times')
+    method(name: 'sleep', type: Object, params: [time: Integer], doc: 'Sleep')
+    method(name: 'sleep', type: Object, namedParams: [parameter(name: 'time', type: Integer), parameter(name: 'unit', type: String, doc: 'java.util.concurrent.TimeUnit, Can be SECONDS, MINUTES, HOURS, DAYS')], doc: 'Sleep')
+    method(name: 'timeout', type: Object, params: [time: Integer, body: Closure], doc: 'Enforce time limit')
+    method(name: 'timeout', type: Object, params: [body: Closure], namedParams: [parameter(name: 'time', type: Integer), parameter(name: 'unit', type: String, doc: 'java.util.concurrent.TimeUnit, Can be SECONDS, MINUTES, HOURS, DAYS')], doc: 'Enforce time limit')
+    method(name: 'tool', type: Object, params: [body: Closure], doc: 'Use a tool from a predefined Tool Installation')
+    method(name: 'waitUntil', type: Object, params: [body: Closure], doc: 'Wait for condition')
+    method(name: 'waitUntil', type: Map, namedParams: [parameter(name: 'initialRecurrencePeriod', type: Integer), parameter(name: 'quiet', type: Boolean)], params: [body: Closure], doc: 'Wait for condition')
+    method(name: 'withCredentials', type: Object, params: [bindings: Map, body: Closure], doc: 'Bind credentials to variables')
+    method(name: 'withCredentials', type: Object, params: [bindings: List, body: Closure], doc: 'Bind credentials to variables')
+    method(name: 'withCredentials', type: Object, params: [file: Closure, string: Closure], doc: 'Bind credentials to variables')
+    method(name: 'withEnv', type: Object, params: [overrides: Map, body: Closure], doc: 'Set environment variables')
+    method(name: 'wrap', type: Object)
+    method(name: 'ws', type: Object, params: [dir: String, body: Closure], doc: 'Allocate workspace')
+    method(name: 'catchError', type: Object, params: [body: Closure], doc: 'Advanced/Deprecated Catch error and set build result')
+    method(name: 'dockerFingerprintRun', type: Object, params: [containerId: String], doc: 'Advanced/Deprecated Record trace of a Docker image run in a container')
+    method(name: 'dockerFingerprintRun', type: Object, namedParams: [parameter(name: 'containerId', type: String), parameter(name: 'toolName', type: String)], doc: 'Record trace of a Docker image run in a container')
+    method(name: 'envVarsForTool', type: Object, namedParams: [parameter(name: 'toolId', type: String), parameter(name: 'toolVersion', type: String)], doc: 'Fetches the environment variables for a given tool in a list of \'FOO=bar\' strings suitable for the withEnv step')
+    method(name: 'getContext', type: Object, params: [type: Map], doc: 'Advanced/Deprecated Get contextual object from internal APIs')
+    method(name: 'withContext', type: Object, params: [context: Object, body: Closure], doc: 'Advanced/Deprecated Use contextual object from internal APIs within a block')
+  }
+
+  if (isArgumentFor(['agent'])) {
+    property(name: 'any', type: Object, 'doc': 'jpgdsl.agent.any')
+    property(name: 'none', type: Object, 'doc': 'jpgdsl.agent.none')
+  }
+
+  // The agent section
+  if (isEnclosedBy(['agent'])) {
+    property(name: 'any', type: String, 'doc': 'jpgdsl.agent.any')
+    property(name: 'none', type: String, 'doc': 'jpgdsl.agent.none')
+
+    method(name: 'node', type: void, params: [body: Closure], doc: 'jpgdsl.agent.node')
+    method(name: 'docker', type: String, params: [dockerImage: String])
+    method(name: 'docker', type: Object, params: [body: Closure])
+    method(name: 'dockerfile', type: Boolean, params: [useDockerfile: Boolean])
+    method(name: 'kubernetes', type: Object, params: [body: Closure], doc: 'Kubernetes environment')
+  }
+
+  if (isEnclosedBy(['docker'])) {
+    method(name: 'image', type: void, params: [name: String])
+    method(name: 'label', type: void, params: [name: String])
+    method(name: 'args', type: void, params: [value: String])
+    method(name: 'alwaysPull', type: void)
+    method(name: 'registryUrl', type: void, params: [url: String])
+    method(name: 'registryCredentialsId', type: void, params: [id: String])
+  }
+
+  if (isEnclosedBy(['kubernetes'])) {
+    method(name: 'defaultContainer', type: void, params: [label: String], doc: 'jpgdsl.agent.kubernetes.defaultContainer')
+    method(name: 'label', type: String, params: [agent_name: String])
+    method(name: 'cloud', type: String, params: [cloud_name: String])
+    method(name: 'yaml', type: String, params: [kubernetes_yaml_definition: String])
+    method(name: 'yamlFile', type: String, params: [kubernetes_yaml_file: String])
+  }
+
+  if (isEnclosedBy(['agent', 'node'])) {
+    method(name: 'label', type: String, params: [agentLabel: String], doc: 'jpgdsl.agent.label')
+  }
+
+  if (isEnclosedBy(['node', 'docker', 'dockerfile'])) {
+    method(name: 'customWorkspace', type: void, params: [path: String], doc: 'jpgdsl.agent.node.customWorkspace')
+  }
+
+  if (isEnclosedBy(['docker', 'dockerfile'])) {
+    method(name: 'reuseNode', type: void, params: [value: boolean], doc: 'jpgdsl.agent.node.reuseNode')
+  }
+
+  // The options section
+  if (isEnclosedBy(['options'])) {
+    method(name: 'buildDiscarder', type: void, params: [logRotator: Object], doc: 'jpgdsl.options.buildDiscarder')
+    method(name: 'checkoutToSubdirectory', type: void, params: [subDir: String], doc: 'jpgdsl.options.checkoutToSubdirectory')
+    method(name: 'disableConcurrentBuilds', type: void, namedParams: [parameter(name: 'abortPrevious', type: Boolean)], doc: 'jpgdsl.options.disableConcurrentBuilds')
+    method(name: 'disableResume', type: void, doc: 'jpgdsl.options.disableResume')
+    method(name: 'newContainerPerStage', type: void, doc: 'jpgdsl.options.newContainerPerStage')
+    method(name: 'overrideIndexTriggers', type: void, params: [value: boolean], doc: 'jpgdsl.options.overrideIndexTriggers')
+    method(name: 'preserveStashes', type: void, namedParams: [parameter(name: 'buildCount', type: int)], doc: 'jpgdsl.options.preserveStashes')
+    method(name: 'quietPeriod', type: void, params: [value: int], doc: 'jpgdsl.options.quietPeriod')
+    method(name: 'retry', type: void, params: [value: int], doc: 'jpgdsl.options.retry')
+    method(name: 'skipDefaultCheckout', type: void, doc: 'jpgdsl.options.skipDefaultCheckout')
+    method(name: 'skipStagesAfterUnstable', type: void, doc: 'jpgdsl.options.skipStagesAfterUnstable')
+    method(name: 'timeout', type: void, namedParams: [parameter(name: 'time', type: Integer), parameter(name: 'unit', type: String)], doc: 'jpgdsl.options.timeout')
+    method(name: 'timestamps', type: void, doc: 'jpgdsl.options.timestamps')
+    method(name: 'parallelsAlwaysFailFast', type: void, doc: 'jpgdsl.options.parallelsAlwaysFailFast')
+  }
+
+  if (isArgumentFor(['buildDiscarder'])) {
+    method(name: 'logRotator', type: Object, namedParams: [parameter(name: 'numToKeepStr', type: String), parameter(name: 'artifactNumToKeepStr', type: String)], doc: 'jpgdsl.options.logRotator')
+  }
+
+  if (isEnclosedBy(['environment'])) {
+    method(name: 'credentials', type: String, params: [id: String], doc: 'jpgdsl.environment.credentials')
+  }
+
+  // The Post section that controls post build activities
+  if (isEnclosedBy(['post'])) {
+    method(name: 'always', type: void, params: [body: Closure], doc: 'jpgdsl.post.always')
+    method(name: 'changed', type: void, params: [body: Closure], doc: 'jpgdsl.post.changed')
+    method(name: 'fixed', type: void, params: [body: Closure], doc: 'jpgdsl.post.fixed')
+    method(name: 'regression', type: void, params: [body: Closure], doc: 'jpgdsl.post.regression')
+    method(name: 'aborted', type: void, params: [body: Closure], doc: 'jpgdsl.post.aborted')
+    method(name: 'failure', type: void, params: [body: Closure], doc: 'jpgdsl.post.failure')
+    method(name: 'success', type: void, params: [body: Closure], doc: 'jpgdsl.post.success')
+    method(name: 'unstable', type: void, params: [body: Closure], doc: 'jpgdsl.post.unstable')
+    method(name: 'unsuccessful', type: void, params: [body: Closure], doc: 'jpgdsl.post.unsuccessful')
+    method(name: 'cleanup', type: void, params: [body: Closure], doc: 'jpgdsl.post.cleanup')
+  }
+
+  if (isEnclosedBy(['parameters'])) {
+    method(name: 'string', type: void, namedParams: [parameter(name: 'name', type: String), parameter(name: 'defaultValue', type: String), parameter(name: 'description', type: String)], doc: 'jpgdsl.parameters.string')
+    method(name: 'text', type: void, namedParams: [parameter(name: 'name', type: String), parameter(name: 'defaultValue', type: String), parameter(name: 'description', type: String)], doc: 'jpgdsl.parameters.text')
+    method(name: 'booleanParam', type: void, namedParams: [parameter(name: 'name', type: String), parameter(name: 'defaultValue', type: Boolean), parameter(name: 'description', type: String)], doc: 'jpgdsl.parameters.booleanParam')
+    method(name: 'choice', type: void, namedParams: [parameter(name: 'name', type: String), parameter(name: 'choices', type: ArrayList<String>), parameter(name: 'description', type: String)], doc: 'jpgdsl.parameters.choice')
+    method(name: 'password', type: void, namedParams: [parameter(name: 'name', type: String), parameter(name: 'defaultValue', type: Boolean), parameter(name: 'description', type: String)], doc: 'jpgdsl.parameters.password')
+  }
+
+  if (isEnclosedBy(['triggers'])) {
+    method(name: 'cron', type: void, params: [expr: String], doc: 'jpgdsl.triggers.cron')
+    method(name: 'pollSCM', type: void, params: [expr: String], doc: 'jpgdsl.triggers.pollSCM')
+    method(name: 'upstream', type: void, namedParams: [parameter(name: 'upstreamProjects', type: String), parameter(name: 'threshold', type: Object)], doc: 'jpgdsl.parameters.upstream')
+  }
+
+  // Inside stages we can find "stage" or "stage('Name')"
+  if (isEnclosedBy(['stages', 'parallel'])) {
+    method(name: 'stage', type: void, params: [name: String, body: Closure], doc: 'jpgdsl.stages.stage')
+  }
+
+  // Stage closure
+  if (isEnclosedBy(['stage'])) {
+    method(name: 'input', type: void, params: [body: Closure], doc: 'jpgdsl.stage.input')
+    method(name: 'warnError', type: Object, params: [name: String, body: Closure], doc: 'Ability to warn on a Stage Error')
+    method(name: 'warnError', type: Object, params: [body: Closure], doc: 'Ability to warn on a Stage Error')
+    method(name: 'wrappers', type: Object, params: [body: Closure], doc: 'Ability to apply a wrapper to a set of steps / functions')
+    method(name: 'steps', type: Object, params: [body: Closure], doc: 'Steps to execute on stage')
+    method(name: 'parallel', type: void, params: [body: Closure], doc: 'jpgdsl.stage.parallel')
+    method(name: 'when', type: Object, params: [body: Closure], doc: 'Whether the stage should be executed depending on the given condition')
+    method(name: 'failFast', type: Object, params: [fail: boolean], doc: 'Set failFast true for all subsequent parallel steps in the stage')
+  }
+
+  // Tools closure
+  // https://www.jenkins.io/doc/book/pipeline/syntax/#tools
+  if (isEnclosedBy(['tools'])) {
+    method(name: 'jdk', type: void, params: [tool: String], doc: 'jpgdsl.tools.jdk')
+    method(name: 'maven', type: void, params: [tool: String], doc: 'jpgdsl.tools.maven')
+    method(name: 'gradle', type: void, params: [tool: String], doc: 'jpgdsl.tools.gradle')
+  }
+
+  // Input closure
+  // https://www.jenkins.io/doc/book/pipeline/syntax/#input
+  if (isEnclosedBy(['input'])) {
+    method(name: 'message', type: void, params: [text: String], doc: 'jpgdsl.input.message')
+    method(name: 'id', type: void, params: [value: String], doc: 'jpgdsl.input.id')
+    method(name: 'ok', type: void, params: [text: String], doc: 'jpgdsl.input.ok')
+    method(name: 'submitter', type: void, params: [usersOrGroups: String], doc: 'jpgdsl.input.submitter')
+    method(name: 'submitterParameter', type: void, params: [envVar: String], doc: 'jpgdsl.input.submitterParameter')
+  }
+
+  // When closure
+  // https://www.jenkins.io/doc/book/pipeline/syntax/#when
+  if (isEnclosedBy(['when'])) {
+    method(name: 'beforeInput', type: void, params: [value: boolean], doc: 'jpgdsl.when.beforeInput')
+    method(name: 'beforeAgent', type: void, params: [value: boolean], doc: 'jpgdsl.when.beforeAgent')
+  }
+
+  if (isEnclosedBy(['when', 'not', 'allOf', 'anyOf'])) {
+    method(name: 'branch', type: boolean, params: [name: String], doc: 'jpgdsl.when.branch')
+    method(name: 'branch', type: boolean, namedParams: [parameter(name: 'pattern', type: String), parameter(name: 'comparator', type: String)], doc: 'jpgdsl.when.branch')
+    method(name: 'buildingTag', type: boolean, doc: 'jpgdsl.when.buildingTag')
+    method(name: 'changelog', type: boolean, params: [regexp: String], doc: 'jpgdsl.when.changelog')
+    method(name: 'changeset', type: boolean, params: [changeset: String], doc: 'jpgdsl.when.changeset')
+    method(name: 'changeset', type: boolean, namedParams: [parameter(name: 'pattern', type: String), parameter(name: 'comparator', type: String), parameter(name: 'caseSensitive', type: Boolean)], doc: 'jpgdsl.when.changeset')
+    method(name: 'changeRequest', type: boolean, doc: 'jpgdsl.when.changeRequest')
+    method(name: 'changeRequest', type: boolean, namedParams: [parameter(name: 'id', type: String), parameter(name: 'target', type: String), parameter(name: 'branch', type: String, doc: ''), parameter(name: 'fork', type: String), parameter(name: 'url', type: String), parameter(name: 'title', type: String), parameter(name: 'author', type: String), parameter(name: 'authorDisplayName', type: String), parameter(name: 'authorEmail', type: String), parameter(name: 'comparator', type: String)], doc: 'jpgdsl.when.changeRequest')
+    method(name: 'environment', type: boolean, namedParams: [parameter(name: 'name', type: String), parameter(name: 'value', type: String)], doc: 'jpgdsl.when.environment')
+    method(name: 'equals', type: boolean, namedParams: [parameter(name: 'expected', type: Object), parameter(name: 'actual', type: Object)], doc: 'jpgdsl.when.equals')
+    method(name: 'expression', type: boolean, params: [body: Closure], doc: 'jpgdsl.when.expression')
+    method(name: 'tag', type: boolean, params: [pattern: String], doc: 'jpgdsl.when.tag')
+    method(name: 'tag', type: boolean, namedParams: [parameter(name: 'pattern', type: String), parameter(name: 'comparator', type: String)], doc: 'jpgdsl.when.tag')
+    method(name: 'not', type: boolean, params: [body: Closure], doc: 'jpgdsl.when.not')
+    method(name: 'allOf', type: boolean, params: [body: Closure], doc: 'jpgdsl.when.allOf')
+    method(name: 'anyOf', type: boolean, params: [body: Closure], doc: 'jpgdsl.when.anyOf')
+    method(name: 'triggeredBy', type: boolean, params: [id: String], doc: 'jpgdsl.when.triggeredBy')
+    method(name: 'triggeredBy', type: boolean, namedParams: [parameter(name: 'cause', type: String), parameter(name: 'detail', type: String)], doc: 'jpgdsl.when.triggeredBy')
+  }
+
+  if (isEnclosedBy([
+      'steps',
+      'script',
+      'always',
+      'changed',
+      'fixed',
+      'regression',
+      'aborted',
+      'failure',
+      'success',
+      'unstable',
+      'unsuccessful',
+      'cleanup',
+  ])) {
+    property(name: 'params', type: Map, doc: 'jpgdsl.params')
+
+    method(name: 'script', type: void, params: [body: Closure], doc: 'jpgdsl.steps.script')
+    method(name: 'echo', type: Object, params: [message: String], doc: 'jpgdsl.steps.echo')
+    method(name: 'bat', type: Object, params: [script: String], doc: 'Windows Batch Script')
+    method(name: 'bat', type: Object, namedParams: [parameter(name: 'script', type: String), parameter(name: 'encoding', type: String), parameter(name: 'returnStatus', type: Boolean), parameter(name: 'returnStdout', type: Boolean)], doc: 'Windows Batch Script')
+    method(name: 'timestamp', type: Object, params: [body: Closure], doc: 'Timestamps')
+    method(name: 'checkout', type: Object, params: [scm: Map], doc: 'General SCM')
+    method(name: 'checkout', type: Object, namedParams: [parameter(name: 'scm', type: Map), parameter(name: 'changelog', type: Boolean), parameter(name: 'poll', type: Boolean)], doc: 'General SCM')
+    method(name: 'cleanWs', doc: 'Clean workspace')
+    method(name: 'deleteDir', type: Object, params: [:], doc: 'Recursively delete the current directory from the workspace')
+    method(name: 'dir', type: Object, params: [path: String, body: Closure], doc: 'Change current directory')
+    method(name: 'fileExists', type: Object, params: [file: String], doc: 'Verify if file exists in workspace')
+    method(name: 'git', type: Object, params: [url: String], doc: 'Git')
+    method(name: 'git', type: Object, namedParams: [parameter(name: 'url', type: String), parameter(name: 'branch', type: String), parameter(name: 'changelog', type: Boolean), parameter(name: 'credentialsId', type: String), parameter(name: 'poll', type: Boolean)], doc: 'Git')
+    method(name: 'junit', type: Object, params: [testResults: String], doc: 'Archive JUnit-formatted test results')
+    method(name: 'junit', type: Object, namedParams: [parameter(name: 'testResults', type: String), parameter(name: 'allowEmptyResults', type: Boolean), parameter(name: 'healthScaleFactor', type: 'double'), parameter(name: 'keepLongStdio', type: Boolean), parameter(name: 'testDataPublishers', type: Map)], doc: 'Archive JUnit-formatted test results')
+    method(name: 'load', type: Object, params: [path: String], doc: 'Evaluate a Groovy source file into the Pipeline script')
+    method(name: 'powershell', type: Object, params: [script: String], doc: 'PowerShell Script')
+    method(name: 'powershell', type: Object, namedParams: [parameter(name: 'script', type: String), parameter(name: 'encoding', type: String), parameter(name: 'returnStatus', type: Boolean), parameter(name: 'returnStdout', type: Boolean)], doc: 'PowerShell Script')
+    method(name: 'publishHTML', type: Object, params: [target: Map], doc: 'Publish HTML reports')
+    method(name: 'pwd', type: Object, params: [:], doc: 'Determine current directory')
+    method(name: 'pwd', type: Object, namedParams: [parameter(name: 'tmp', type: Boolean)], doc: 'Determine current directory')
+    method(name: 'readFile', type: Object, params: [file: String], doc: 'Read file from workspace')
+    method(name: 'readFile', type: Object, namedParams: [parameter(name: 'file', type: String), parameter(name: 'encoding', type: String)], doc: 'Read file from workspace')
+    method(name: 'sh', type: Object, params: [script: String], doc: 'Shell Script')
+    method(name: 'sh', type: Object, namedParams: [parameter(name: 'script', type: String), parameter(name: 'encoding', type: String), parameter(name: 'returnStatus', type: Boolean), parameter(name: 'returnStdout', type: Boolean)], doc: 'Shell Script')
+    method(name: 'stash', type: Object, params: [name: String], doc: 'Stash some files to be used later in the build')
+    method(name: 'stash', type: Object, namedParams: [parameter(name: 'name', type: String), parameter(name: 'allowEmpty', type: Boolean), parameter(name: 'excludes', type: String), parameter(name: 'includes', type: String), parameter(name: 'useDefaultExcludes', type: Boolean)], doc: 'Stash some files to be used later in the build')
+    method(name: 'tm', type: Object, params: [stringWithMacro: String], doc: 'Expand a string containing macros')
+    method(name: 'unstash', type: Object, params: [name: String], doc: 'Restore files previously stashed')
+    method(name: 'validateDeclarativePipeline', type: Object, params: [path: String], doc: 'Validate a file containing a Declarative Pipeline')
+    method(name: 'wrap', type: Object, params: [delegate: Map, body: Closure], doc: 'General Build Wrapper')
+    method(name: 'writeFile', type: Object, namedParams: [parameter(name: 'file', type: String), parameter(name: 'text', type: String), parameter(name: 'encoding', type: String)], doc: 'Write file to workspace')
+    method(name: 'archive', type: Object, params: [includes: String], doc: 'Advanced/Deprecated Archive artifacts')
+    method(name: 'archive', type: Object, namedParams: [parameter(name: 'includes', type: String), parameter(name: 'excludes', type: String)], doc: 'Archive artifacts')
+    method(name: 'dockerFingerprintFrom', type: Object, namedParams: [parameter(name: 'dockerfile', type: String), parameter(name: 'image', type: String), parameter(name: 'buildArgs', type: Map), parameter(name: 'toolName', type: String)], doc: 'Record trace of a Docker image used in FROM')
+    method(name: 'unarchive', type: Object, params: [:], doc: 'Advanced/Deprecated Copy archived artifacts into the workspace')
+    method(name: 'unarchive', type: Object, namedParams: [parameter(name: 'mapping', type: Map)], doc: 'Copy archived artifacts into the workspace')
+    method(name: 'withDockerContainer', type: Object, params: [image: String, body: Closure], doc: 'Advanced/Deprecated Run build steps inside a Docker container')
+    method(name: 'withDockerContainer', type: Object, params: [body: Closure], namedParams: [parameter(name: 'image', type: String), parameter(name: 'args', type: String), parameter(name: 'toolName', type: String)], doc: 'Run build steps inside a Docker container')
+    method(name: 'withDockerRegistry', type: Object, params: [registry: Map, body: Closure], doc: 'Advanced/Deprecated Sets up Docker registry endpoint')
+    method(name: 'withDockerServer', type: Object, params: [server: Map, body: Closure], doc: 'Advanced/Deprecated Sets up Docker server endpoint')
+    method(name: 'aliyunOSSUpload', type: Object, doc: 'Upload files or directories to aliyun OSS', namedParams: [parameter(name: 'endpoint', type: String), parameter(name: 'accessKeyId', type: String), parameter(name: 'accessKeySecret', type: String), parameter(name: 'bucketName', type: String), parameter(name: 'localPath', type: String), parameter(name: 'remotePath', type: String), parameter(name: 'maxRetries', type: String)])
+    method(name: 'archiveArtifacts', type: Object, namedParams: [parameter(name: 'artifacts', type: String, doc: 'Use comma separator to set a list of patterns'), parameter(name: 'excludes', type: String, doc: 'Use comma separator to set a list of patterns'), parameter(name: 'allowEmptyArchive', type: Boolean), parameter(name: 'caseSensitive', type: Boolean), parameter(name: 'defaultExcludes', type: Boolean), parameter(name: 'fingerprint', type: Boolean), parameter(name: 'followSymlinks', type: Boolean), parameter(name: 'onlyIfSuccessful', type: Boolean)])
+    method(name: 'buildName', type: Object, params: [buildName: String], doc: 'Build name')
+    method(name: 'buildDescription', type: Object, params: [buildDescription: String], doc: 'Build description')
+    method(name: 'publishIssues', type: Object, params: [issues: List], doc: 'Publish issues created by a static analysis scan')
+    method(name: 'publishIssues', type: Object, namedParams: [parameter(name: 'issues', type: 'java.util.List'), parameter(name: 'failOnError', type: 'boolean')])
+    method(name: 'scanForIssues', type: 'Object', params: [:], doc: 'Scan files or the console log for warnings or issues')
+    method(name: 'scanForIssues', type: 'Object', namedParams: [parameter(name: 'blameDisabled', type: 'boolean'), parameter(name: 'filters', type: 'java.util.List')])
+  }
+}
