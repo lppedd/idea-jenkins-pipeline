@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" targetNamespace="http://www.namespace.org/idea-jenkins-pipeline" version="1.0">
+  <xs:element name="gdsl">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="definitions">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element maxOccurs="unbounded" name="definition">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element type="xs:string" name="doc">
+                      <xs:annotation>
+                        <xs:documentation xml:lang="en">
+                          The HTML documentation for the GDSL definition.
+                        </xs:documentation>
+                      </xs:annotation>
+                    </xs:element>
+                    <xs:element type="xs:boolean" minOccurs="0" name="hasGetter" default="true">
+                      <xs:annotation>
+                        <xs:documentation xml:lang="en">
+                          Whether using a getter method for the GDSL definition is allowed.
+                          By default <code>true</code>.
+                        </xs:documentation>
+                      </xs:annotation>
+                    </xs:element>
+                  </xs:sequence>
+                  <xs:attribute type="xs:string" use="required" name="id"/>
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>
