@@ -1,0 +1,66 @@
+<idea-plugin>
+  <id>com.github.lppedd.idea-jenkins-pipeline</id>
+  <name>Jenkins Pipeline</name>
+
+  <vendor email="lp.edoardo@gmail.com" url="https://www.github.com/lppedd/idea-jenkins-pipeline">
+    Edoardo Luppi
+  </vendor>
+
+  <description><![CDATA[
+    Provides support for Jenkins Pipelines (declarative only as of now) in Groovy files.
+  ]]></description>
+
+  <depends>com.intellij.modules.platform</depends>
+  <depends>com.intellij.modules.java</depends>
+  <depends>org.intellij.groovy</depends>
+
+  <extensions defaultExtensionNs="com.intellij">
+    <!-- Support New UI icons -->
+    <iconMapper mappingFile="JenkinsPipelineIconMappings.json"/>
+
+    <!-- Assign Jenkinsfile to the Groovy file type automatically -->
+    <fileType name="Groovy" fileNames="Jenkinsfile"/>
+
+    <!-- Provide an icon for Jenkinsfile -->
+    <fileIconProvider order="first" implementation="com.github.lppedd.idea.jenkins.pipeline.JPFileIconProvider"/>
+
+    <!--
+    Enhance the Groovy structure tree with pipeline nodes.
+    Beware we override the Groovy PsiStructureViewFactory because we need
+    additional customizations not available with the StructureViewExtension only
+    -->
+    <lang.psiStructureViewFactory order="first" language="Groovy" implementationClass="com.github.lppedd.idea.jenkins.pipeline.structure.JPGroovyStructureViewFactory"/>
+    <lang.structureViewExtension implementation="com.github.lppedd.idea.jenkins.pipeline.structure.JPStructureViewExtension"/>
+
+    <!-- Provide gutter icons for elements: parallel stages, matrix stages, stage -->
+    <codeInsight.lineMarkerProvider language="Groovy" implementationClass="com.github.lppedd.idea.jenkins.pipeline.gutter.JPParallelStagesLineMarkerProvider"/>
+    <codeInsight.lineMarkerProvider language="Groovy" implementationClass="com.github.lppedd.idea.jenkins.pipeline.gutter.JPMatrixStagesLineMarkerProvider"/>
+    <codeInsight.lineMarkerProvider language="Groovy" implementationClass="com.github.lppedd.idea.jenkins.pipeline.gutter.JPStageLineMarkerProvider"/>
+
+    <!-- Copy embedded GDSL files to where IJ is able to discover them -->
+    <!--suppress PluginXmlValidity -->
+    <ApplicationLoadListener implementation="com.github.lppedd.idea.jenkins.pipeline.JPApplicationLoadListener"/>
+
+    <!-- Override the standard GroovyDocumentationProvider to output beautified documentation -->
+    <lang.documentationProvider order="first" language="Groovy" implementationClass="com.github.lppedd.idea.jenkins.pipeline.JPGroovyDocumentationProvider"/>
+
+    <!-- Register the Jenkins Pipeline library. This will correctly expose our classes to Groovy scripts -->
+    <library.type implementation="com.github.lppedd.idea.jenkins.pipeline.JPLibraryType"/>
+
+    <!-- Provide support even when the Jenkins Pipeline library has not been added to the module -->
+    <additionalLibraryRootsProvider implementation="com.github.lppedd.idea.jenkins.pipeline.JPAdditionalLibraryRootsProvider"/>
+    <resolveScopeEnlarger implementation="com.github.lppedd.idea.jenkins.pipeline.JPResolveScopeEnlarger"/>
+
+    <!-- Adjust the order of completion items, prioritizing GDSL ones -->
+    <weigher key="completion" implementationClass="com.github.lppedd.idea.jenkins.pipeline.JPCompletionWeigher" order="first"/>
+  </extensions>
+
+  <extensions defaultExtensionNs="org.intellij.groovy">
+    <!-- Enhance GDSL scripts -->
+    <gdslScriptProvider implementation="com.github.lppedd.idea.jenkins.pipeline.gdsl.JPGdslScriptProvider"/>
+    <gdslTopLevelProvider implementation="com.github.lppedd.idea.jenkins.pipeline.gdsl.JPGdslMembersProvider"/>
+
+    <!-- Offer completion elements for maps -->
+    <mapContentProvider implementation="com.github.lppedd.idea.jenkins.pipeline.JPMapContentProvider"/>
+  </extensions>
+</idea-plugin>

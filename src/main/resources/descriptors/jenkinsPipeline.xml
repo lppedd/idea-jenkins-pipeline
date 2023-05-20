@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<gdsl>
+  <definitions>
+    <definition id="env">
+      <doc>A map of all available environment variables.</doc>
+      <getter>false</getter>
+    </definition>
+    <definition id="agent">
+      <doc>
+        <![CDATA[
+        <p>
+        The <code>agent</code> section specifies where the entire Pipeline, or a specific stage,
+        will execute in the Jenkins environment depending on where the agent section is placed.
+        </p>
+        <p>
+          The section must be defined at the top-level inside the <code>pipeline</code> block,
+          but stage-level usage is optional.
+        </p>
+        ]]>
+      </doc>
+    </definition>
+  </definitions>
+</gdsl>
