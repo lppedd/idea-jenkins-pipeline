@@ -1,6 +1,5 @@
 package com.github.lppedd.idea.jenkins.pipeline.gdsl;
 
-import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.util.PsiTreeUtil;
 import org.jetbrains.annotations.NotNull;
@@ -14,14 +13,15 @@ import org.jetbrains.plugins.groovy.lang.psi.api.statements.expressions.GrMethod
 import org.jetbrains.plugins.groovy.lang.psi.api.statements.expressions.GrReferenceExpression;
 import org.jetbrains.plugins.groovy.lang.psi.api.statements.typedef.members.GrMethod;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * Important: keep the code as simple as possible, as this part is difficult to debug.
+ *
  * @author Edoardo Luppi
  */
-@SuppressWarnings("unused")
 public class JPGdslMembersProvider implements GdslMembersProvider {
+  @GdslMethod
   public boolean isPropertyOf(final @Nullable String name, final @NotNull GdslMembersHolderConsumer consumer) {
     if (name == null) {
       return false;
@@ -40,6 +40,7 @@ public class JPGdslMembersProvider implements GdslMembersProvider {
     return true;
   }
 
+  @GdslMethod
   public boolean isType(final @Nullable String name, final @NotNull GdslMembersHolderConsumer consumer) {
     if (name == null) {
       return false;
@@ -95,6 +96,7 @@ public class JPGdslMembersProvider implements GdslMembersProvider {
    * <p>
    * Useful for the {@code pipeline} closure, which cannot be nested inside other closures.
    */
+  @GdslMethod
   public boolean isTopLevel(final @NotNull GdslMembersHolderConsumer consumer) {
     final var place = consumer.getPlace();
 
@@ -115,32 +117,34 @@ public class JPGdslMembersProvider implements GdslMembersProvider {
     return false;
   }
 
+  @GdslMethod
   public boolean isArgumentFor(final @Nullable List<String> names, final @NotNull GdslMembersHolderConsumer consumer) {
-    var place = consumer.getPlace();
+    final var place = consumer.getPlace();
 
-    if (names == null || names.isEmpty() || place == null) {
+    if (names == null || names.isEmpty() || !(place instanceof final GrReferenceExpression refExpr)) {
       return false;
     }
 
-    if (place.getParent() instanceof final GrMethodCall methodCall) {
-      if (place.getText().equals(JPGdslUtils.getInvokedMethodName(methodCall))) {
-        place = methodCall;
-      }
-    }
+    final var refExprParent = refExpr.getParent();
 
-    if (place.getParent() instanceof final GrArgumentList argumentList) {
+    if (refExprParent instanceof final GrArgumentList argumentList) {
       if (argumentList.getParent() instanceof final GrMethodCall methodCall) {
-        for (final var name : names) {
-          if (name.equals(JPGdslUtils.getInvokedMethodName(methodCall))) {
-            return true;
-          }
+        return names.contains(JPGdslUtils.getInvokedMethodName(methodCall));
+      }
+    } else if (refExprParent instanceof final GrMethodCall methodCall) {
+      if (methodCall.getParent() instanceof final GrArgumentList argumentList) {
+        if (argumentList.getParent() instanceof final GrMethodCall outerMethodCall) {
+          return names.contains(JPGdslUtils.getInvokedMethodName(outerMethodCall));
         }
       }
+
+      return names.contains(JPGdslUtils.getInvokedMethodName(methodCall));
     }
 
     return false;
   }
 
+  @GdslMethod
   public boolean isEnclosedBy(final @Nullable List<String> names, final @NotNull GdslMembersHolderConsumer consumer) {
     final var place = consumer.getPlace();
 
@@ -157,18 +161,12 @@ public class JPGdslMembersProvider implements GdslMembersProvider {
     final var blockParent = block.getParent();
 
     if (blockParent instanceof final GrMethodCall methodCall) {
-      for (final var name : names) {
-        if (name.equals(JPGdslUtils.getInvokedMethodName(methodCall))) {
-          return true;
-        }
-      }
-    } else if (blockParent instanceof final GrArgumentList argumentList) {
+      return names.contains(JPGdslUtils.getInvokedMethodName(methodCall));
+    }
+
+    if (blockParent instanceof final GrArgumentList argumentList) {
       if (argumentList.getParent() instanceof final GrMethodCall methodCall) {
-        for (final var name : names) {
-          if (name.equals(JPGdslUtils.getInvokedMethodName(methodCall))) {
-            return true;
-          }
-        }
+        return names.contains(JPGdslUtils.getInvokedMethodName(methodCall));
       }
     }
 
@@ -178,20 +176,8 @@ public class JPGdslMembersProvider implements GdslMembersProvider {
   /**
    * TODO
    */
+  @GdslMethod
   public boolean isInsideMethod(final @NotNull GdslMembersHolderConsumer consumer) {
     return PsiTreeUtil.getParentOfType(consumer.getPlace(), GrMethod.class, true) != null;
-  }
-
-  // PRIVATE UTILITIES
-
-  private static @NotNull List<GrClosableBlock> findAllParents(final @NotNull PsiElement element) {
-    final var calls = new ArrayList<GrClosableBlock>(4);
-    var call = element;
-
-    while ((call = PsiTreeUtil.getParentOfType(call, GrClosableBlock.class, true)) != null) {
-      calls.add((GrClosableBlock) call);
-    }
-
-    return calls;
   }
 }
