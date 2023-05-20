@@ -7,7 +7,8 @@ Provides support for Jenkins Pipelines (**declarative only** as of now) in Groov
 
 ## Development status
 
-The plugin is under active development.
+The plugin is under active development.  
+[Open a discussion][1] for feature requests, and I'll consider them.
 
 ## Preview
 
@@ -20,3 +21,5 @@ The plugin is under active development.
 ### Structure view
 
 ![](.github/images/structure.png "Structure view for a declarative pipeline")
+
+[1]: https://github.com/lppedd/idea-jenkins-pipeline/discussions/categories/ideas
