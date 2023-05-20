@@ -1,5 +1,8 @@
 <component name="ProjectCodeStyleConfiguration">
   <code_scheme name="Project" version="173">
+    <HTMLCodeStyleSettings>
+      <option name="HTML_DO_NOT_INDENT_CHILDREN_OF" value="" />
+    </HTMLCodeStyleSettings>
     <Properties>
       <option name="SPACES_AROUND_KEY_VALUE_DELIMITER" value="true" />
       <option name="KEEP_BLANK_LINES" value="true" />

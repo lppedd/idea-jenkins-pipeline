@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 /**
  * @author Edoardo Luppi
@@ -58,9 +59,9 @@ public final class JPGdslService {
               final var id = definitionElement.getAttribute("id");
 
               if (!id.isBlank()) {
-                final var name = getFirstChildElementValue(definitionElement, "name");
-                final var doc = getFirstChildElementValue(definitionElement, "doc");
-                final var getter = getFirstChildElementValue(definitionElement, "getter");
+                final var name = getFirstChildElementTextContent(definitionElement, "name");
+                final var doc = getFirstChildElementTextContent(definitionElement, "doc");
+                final var getter = getFirstChildElementTextContent(definitionElement, "hasGetter");
                 descriptors.put(id, new Descriptor(id, name, doc, !"false".equals(getter)));
               }
             }
@@ -74,12 +75,12 @@ public final class JPGdslService {
     return descriptors;
   }
 
-  private @Nullable String getFirstChildElementValue(
+  private @Nullable String getFirstChildElementTextContent(
       final @NotNull Element element,
       final @NotNull String name) {
     final var child = getFirstChildElement(element, name);
-    return child != null
-        ? sanitizeTextContent(child.getTextContent())
+    return child instanceof final Element e
+        ? getElementTextContent(e)
         : null;
   }
 
@@ -95,8 +96,34 @@ public final class JPGdslService {
     return null;
   }
 
-  private @NotNull String sanitizeTextContent(final @NotNull String text) {
-    return text.replaceAll("\n *", " ").trim();
+  private @NotNull String getElementTextContent(final @NotNull Element element) {
+    final var textContent = element.getTextContent().trim();
+    final var marginPrefix = element.getAttribute("marginPrefix").trim();
+    final var marginPrefixChar = marginPrefix.isEmpty()
+        ? '|'
+        : marginPrefix.charAt(0);
+
+    return textContent.lines()
+        .map(line -> trimLineWithMarginPrefix(line, marginPrefixChar))
+        .collect(Collectors.joining("\n"));
+  }
+
+  private @NotNull String trimLineWithMarginPrefix(
+      final @NotNull String line,
+      final char marginPrefix) {
+    for (var i = 0; i < line.length(); i++) {
+      final var ch = line.charAt(i);
+
+      if (!Character.isWhitespace(ch)) {
+        if (ch == marginPrefix) {
+          return line.substring(i + 1);
+        }
+
+        break;
+      }
+    }
+
+    return line.trim();
   }
 
   public static class Descriptor {

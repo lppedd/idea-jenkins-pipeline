@@ -9,12 +9,19 @@
               <xs:element maxOccurs="unbounded" name="definition">
                 <xs:complexType>
                   <xs:sequence>
-                    <xs:element type="xs:string" name="doc">
-                      <xs:annotation>
-                        <xs:documentation xml:lang="en">
-                          The HTML documentation for the GDSL definition.
-                        </xs:documentation>
-                      </xs:annotation>
+                    <xs:element name="doc">
+                      <xs:complexType>
+                        <xs:annotation>
+                          <xs:documentation xml:lang="en">
+                            The HTML documentation for the GDSL definition.
+                          </xs:documentation>
+                        </xs:annotation>
+                        <xs:simpleContent>
+                          <xs:extension base="xs:string">
+                            <xs:attribute name="marginPrefix" type="xs:string" default="|"/>
+                          </xs:extension>
+                        </xs:simpleContent>
+                      </xs:complexType>
                     </xs:element>
                     <xs:element type="xs:boolean" minOccurs="0" name="hasGetter" default="true">
                       <xs:annotation>
