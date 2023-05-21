@@ -37,6 +37,9 @@
     <codeInsight.lineMarkerProvider language="Groovy" implementationClass="com.github.lppedd.idea.jenkins.pipeline.gutter.JPMatrixStagesLineMarkerProvider"/>
     <codeInsight.lineMarkerProvider language="Groovy" implementationClass="com.github.lppedd.idea.jenkins.pipeline.gutter.JPStageLineMarkerProvider"/>
 
+    <!-- Do not highlight GString arguments inputted to String named parameters -->
+    <daemon.highlightInfoFilter implementation="com.github.lppedd.idea.jenkins.pipeline.JPGStringHighlightInfoFilter"/>
+
     <!-- Copy embedded GDSL files to where IJ is able to discover them -->
     <!--suppress PluginXmlValidity -->
     <ApplicationLoadListener implementation="com.github.lppedd.idea.jenkins.pipeline.JPApplicationLoadListener"/>

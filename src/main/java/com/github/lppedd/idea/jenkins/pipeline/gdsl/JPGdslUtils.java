@@ -43,7 +43,7 @@ public class JPGdslUtils {
   }
 
   @Contract("null -> null")
-  public static @Nullable GrMethod isGdslGrMethodOrNull(final @Nullable PsiElement element) {
+  public static @Nullable GrMethod getGdslGrMethodOrNull(final @Nullable PsiElement element) {
     return element instanceof LightElement && element instanceof final GrMethod method
         ? method
         : null;
@@ -95,10 +95,10 @@ public class JPGdslUtils {
       // The user might have specified a method with the same name as the Jenkins one.
       // In that case we don't want to provide support, so we want "light" elements only
       final var resolveResult = refExpr.resolve();
-      final var method = JPGdslUtils.isGdslGrMethodOrNull(resolveResult);
+      final var gdslMethod = JPGdslUtils.getGdslGrMethodOrNull(resolveResult);
 
-      if (method != null) {
-        final var returnType = method.getReturnType();
+      if (gdslMethod != null) {
+        final var returnType = gdslMethod.getReturnType();
 
         if (returnType != null) {
           return returnType.getCanonicalText();

@@ -15,7 +15,7 @@ import org.jetbrains.plugins.groovy.lang.psi.api.statements.expressions.literals
  */
 public class JPUtils {
   public static boolean isJenkinsfile(final @NotNull VirtualFile virtualFile) {
-    return JPConstants.JENKINSFILE.equals(virtualFile.getName()) &&
+    return JPConstants.Files.JENKINSFILE.equals(virtualFile.getName()) &&
            FileTypeRegistry.getInstance().isFileOfType(virtualFile, GroovyFileType.GROOVY_FILE_TYPE);
   }
 
@@ -27,8 +27,6 @@ public class JPUtils {
             : psiFile.getViewProvider().getVirtualFile()
     );
   }
-
-
 
   public static @Nullable String getStageName(final @NotNull GrMethodCall methodCall) {
     final var argumentList = methodCall.getArgumentList();

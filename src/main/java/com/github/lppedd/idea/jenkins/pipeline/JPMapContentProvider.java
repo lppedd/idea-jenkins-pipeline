@@ -111,18 +111,18 @@ public class JPMapContentProvider extends GroovyMapContentProvider {
   @Contract("null -> false")
   private boolean isParamsObject(final @Nullable PsiElement element) {
     if (isInstanceOf(element, "java.util.Map")) {
-      final var method = JPGdslUtils.isGdslGrMethodOrNull(element);
-      return method != null && "getParams".equals(method.getName());
+      final var gdslMethod = JPGdslUtils.getGdslGrMethodOrNull(element);
+      return gdslMethod != null && "getParams".equals(gdslMethod.getName());
     }
 
     return false;
   }
 
   private boolean isInstanceOf(final @Nullable PsiElement element, final @NotNull String canonicalName) {
-    final var method = JPGdslUtils.isGdslGrMethodOrNull(element);
+    final var gdslMethod = JPGdslUtils.getGdslGrMethodOrNull(element);
 
-    if (method != null) {
-      final var returnType = method.getReturnType();
+    if (gdslMethod != null) {
+      final var returnType = gdslMethod.getReturnType();
       return returnType != null && returnType.getCanonicalText().equals(canonicalName);
     }
 

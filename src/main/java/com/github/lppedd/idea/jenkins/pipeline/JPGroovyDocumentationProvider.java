@@ -82,16 +82,16 @@ public class JPGroovyDocumentationProvider extends GroovyDocumentationProvider {
   }
 
   private @Nullable String generateGdslDoc(final @NotNull PsiElement element, final @NotNull Descriptor descriptor) {
-    final var method = JPGdslUtils.isGdslGrMethodOrNull(element);
+    final var gdslMethod = JPGdslUtils.getGdslGrMethodOrNull(element);
 
-    if (method != null) {
+    if (gdslMethod != null) {
       final var sb = new StringBuilder(256);
-      final var returnType = method.getReturnType();
+      final var returnType = gdslMethod.getReturnType();
       sb.append(DocumentationMarkup.DEFINITION_START);
 
       if (returnType != null) {
         final var project = element.getProject();
-        final var type = PsiType.getTypeByName(returnType.getCanonicalText(), project, method.getResolveScope());
+        final var type = PsiType.getTypeByName(returnType.getCanonicalText(), project, gdslMethod.getResolveScope());
         final var resolvedPsiElement = type.resolve();
         final var refText = JavaDocUtil.getReferenceText(project, resolvedPsiElement);
         final var presentableText = returnType.getPresentableText();
