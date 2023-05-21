@@ -2,6 +2,7 @@
 <img align="left" width="85" height="85" src="https://raw.githubusercontent.com/lppedd/idea-jenkins-pipeline/master/.github/images/logo.png" alt="Plugin logo">
 
 # Jenkins Pipeline
+<br>
 
 Provides support for Jenkins Pipelines (**declarative only** as of now) in Groovy files.
 
@@ -21,5 +22,9 @@ The plugin is under active development.
 ### Structure view
 
 ![](.github/images/structure.png "Structure view for a declarative pipeline")
+
+## Author and contributors
+
+- Edoardo Luppi
 
 [1]: https://github.com/lppedd/idea-jenkins-pipeline/discussions/categories/ideas
