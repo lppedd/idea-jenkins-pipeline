@@ -42,7 +42,7 @@ public class JPLibraryType extends LibraryType<DummyLibraryProperties> {
       final @NotNull JComponent parentComponent,
       final @Nullable VirtualFile contextDirectory,
       final @NotNull Project project) {
-    return new JenkinsPipelineLibraryConfiguration(getCreateActionName(), this, DummyLibraryProperties.INSTANCE);
+    return new JenkinsPipelineLibraryConfiguration(getCreateActionName(), this);
   }
 
   @Override
@@ -54,9 +54,8 @@ public class JPLibraryType extends LibraryType<DummyLibraryProperties> {
   private static class JenkinsPipelineLibraryConfiguration extends NewLibraryConfiguration {
     JenkinsPipelineLibraryConfiguration(
         final @NotNull String defaultLibraryName,
-        final @Nullable LibraryType<DummyLibraryProperties> libraryType,
-        final @Nullable DummyLibraryProperties properties) {
-      super(defaultLibraryName, libraryType, properties);
+        final @NotNull LibraryType<DummyLibraryProperties> libraryType) {
+      super(defaultLibraryName, libraryType, DummyLibraryProperties.INSTANCE);
     }
 
     @SuppressWarnings("DataFlowIssue")
