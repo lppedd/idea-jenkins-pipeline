@@ -1,33 +1,33 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg width="14" height="14" viewBox="0 0 16 16" version="1.1" xmlns="http://www.w3.org/2000/svg">
+<svg width="16" height="16" viewBox="0 0 16 16" version="1.1" xmlns="http://www.w3.org/2000/svg">
   <g>
     <rect
         width="1.9915254"
         height="11.000001"
         x="2"
         y="3.4915249"
-        fill="#588fd2"
+        fill="#6a99c8"
     />
     <rect
         width="1.9915254"
         height="13.000001"
         x="5.3361578"
         y="1.4999995"
-        fill="#828282"
+        fill="#afb1b3"
     />
     <rect
         width="1.9915254"
         height="9.4915257"
         x="8.6723166"
         y="5.0084734"
-        fill="#d33833"
+        fill="#be4946"
     />
     <rect
         width="1.9915254"
         height="9.4915257"
         x="12.008474"
         y="5"
-        fill="#828282"
+        fill="#afb1b3"
     />
   </g>
 </svg>

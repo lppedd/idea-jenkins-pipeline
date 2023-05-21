@@ -1,6 +1,8 @@
 {
   "icons": {
     "expui": {
+      "sharedLibrary.svg": "icons/sharedLibrary.svg",
+      "sharedLibrary_dark.svg": "icons/sharedLibrary_dark.svg",
       "matrix.svg": "icons/matrix.svg",
       "matrix_dark.svg": "icons/matrix_dark.svg",
       "parallelStages.svg": "icons/parallelStages.svg",
