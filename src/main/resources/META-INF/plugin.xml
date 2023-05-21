@@ -63,6 +63,9 @@
     <gdslScriptProvider implementation="com.github.lppedd.idea.jenkins.pipeline.gdsl.JPGdslScriptProvider"/>
     <gdslTopLevelProvider implementation="com.github.lppedd.idea.jenkins.pipeline.gdsl.JPGdslMembersProvider"/>
 
+    <!-- Add definitions (classes, interfaces, annotations, static methods) for which an import statement is not required -->
+    <importContributor implementation="com.github.lppedd.idea.jenkins.pipeline.JPImportContributor"/>
+
     <!-- Offer completion elements for maps -->
     <mapContentProvider implementation="com.github.lppedd.idea.jenkins.pipeline.JPMapContentProvider"/>
   </extensions>
