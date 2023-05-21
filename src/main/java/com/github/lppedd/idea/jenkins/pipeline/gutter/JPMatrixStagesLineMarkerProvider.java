@@ -25,7 +25,7 @@ import java.util.Collection;
 public class JPMatrixStagesLineMarkerProvider extends RelatedItemLineMarkerProvider {
   @Override
   public @NotNull String getName() {
-    return "Matrix stages";
+    return "Matrix";
   }
 
   @Override

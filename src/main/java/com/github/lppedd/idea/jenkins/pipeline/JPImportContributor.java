@@ -16,7 +16,7 @@ import java.util.List;
  */
 public class JPImportContributor implements GrImportContributor {
   private static final List<GroovyImport> JENKINS_IMPORTS = List.of(
-      new RegularImport("org.jenkinsci.plugins.workflow.shared.Library", "Library")
+      new RegularImport(JPConstants.Internal.LIBRARY)
   );
 
   @Override

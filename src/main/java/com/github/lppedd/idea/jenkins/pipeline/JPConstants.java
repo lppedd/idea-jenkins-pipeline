@@ -14,4 +14,8 @@ public class JPConstants {
     public static final String STRING = "java.lang.String";
     public static final String GSTRING = "groovy.lang.GString";
   }
+
+  public static class Internal {
+    public static final String LIBRARY = "org.jenkinsci.plugins.workflow.shared.Library";
+  }
 }

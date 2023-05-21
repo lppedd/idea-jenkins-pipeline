@@ -32,7 +32,8 @@
     <lang.psiStructureViewFactory order="first" language="Groovy" implementationClass="com.github.lppedd.idea.jenkins.pipeline.structure.JPGroovyStructureViewFactory"/>
     <lang.structureViewExtension implementation="com.github.lppedd.idea.jenkins.pipeline.structure.JPStructureViewExtension"/>
 
-    <!-- Provide gutter icons for elements: parallel stages, matrix stages, stage -->
+    <!-- Provide gutter icons for elements: shared library, parallel stages, matrix, stage -->
+    <codeInsight.lineMarkerProvider language="Groovy" implementationClass="com.github.lppedd.idea.jenkins.pipeline.gutter.JPSharedLibraryLineMarkerProvider"/>
     <codeInsight.lineMarkerProvider language="Groovy" implementationClass="com.github.lppedd.idea.jenkins.pipeline.gutter.JPParallelStagesLineMarkerProvider"/>
     <codeInsight.lineMarkerProvider language="Groovy" implementationClass="com.github.lppedd.idea.jenkins.pipeline.gutter.JPMatrixStagesLineMarkerProvider"/>
     <codeInsight.lineMarkerProvider language="Groovy" implementationClass="com.github.lppedd.idea.jenkins.pipeline.gutter.JPStageLineMarkerProvider"/>
