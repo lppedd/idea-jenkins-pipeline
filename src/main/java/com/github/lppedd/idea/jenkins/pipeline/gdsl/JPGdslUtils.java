@@ -1,7 +1,6 @@
 package com.github.lppedd.idea.jenkins.pipeline.gdsl;
 
 import com.github.lppedd.idea.jenkins.pipeline.utils.JPGroovyUtils;
-import com.intellij.openapi.util.Pair;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.impl.light.LightElement;
 import org.jetbrains.annotations.Contract;
@@ -51,21 +50,21 @@ public class JPGdslUtils {
 
   @SuppressWarnings("unused")
   @Contract("null -> null")
-  public static @Nullable Pair<String, String> getRootAndDescriptorId(final @Nullable PsiElement psiElement) {
+  public static @Nullable RootAndDescriptorId getRootAndDescriptorId(final @Nullable PsiElement psiElement) {
     return psiElement != null
         ? getRootAndDescriptorId(psiElement.getUserData(NonCodeMembersHolder.DOCUMENTATION))
         : null;
   }
 
   @Contract("null -> null")
-  public static @Nullable Pair<String, String> getRootAndDescriptorId(final @Nullable String gdslDoc) {
+  public static @Nullable RootAndDescriptorId getRootAndDescriptorId(final @Nullable String gdslDoc) {
     if (gdslDoc != null) {
       final var matcher = ROOT_PATTERN.matcher(gdslDoc);
 
       if (matcher.matches()) {
         final var rootId = matcher.group(1);
         final var definitionId = matcher.group(2);
-        return Pair.create(rootId, definitionId);
+        return new RootAndDescriptorId(rootId, definitionId);
       }
     }
 
@@ -108,4 +107,9 @@ public class JPGdslUtils {
 
     return null;
   }
+
+  public record RootAndDescriptorId(
+      String rootId,
+      String descriptorId
+  ) { }
 }

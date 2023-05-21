@@ -15,6 +15,8 @@ import org.jetbrains.plugins.groovy.dsl.holders.NonCodeMembersHolder;
 import org.jetbrains.plugins.groovy.lang.documentation.GroovyDocumentationProvider;
 import org.jetbrains.plugins.groovy.lang.psi.api.statements.expressions.GrReferenceExpression;
 
+import java.util.Objects;
+
 /**
  * @author Edoardo Luppi
  */
@@ -47,70 +49,81 @@ public class JPGroovyDocumentationProvider extends GroovyDocumentationProvider {
     final var ids = JPGdslUtils.getRootAndDescriptorId(gdslDoc);
 
     if (ids == null) {
+      // This GDSL element is not in our scope.
+      // Another documentation provider will take care of it
       return null;
     }
 
     final var gdslService = mutableElement.getProject().getService(JPGdslService.class);
-    final var descriptor = gdslService.getDescriptor(ids.first, ids.second);
+    final var descriptor = gdslService.getDescriptor(ids.rootId(), ids.descriptorId());
 
     if (descriptor == null) {
+      // This element does not have an XML descriptor associated yet.
+      // We will beautify the presentation anyway
+      final var standardDoc = getStandardDoc(element, originalElement);
+
+      if (standardDoc != null) {
+        final var message = "Missing XML descriptor for: <code>" + gdslDoc + "</code>";
+        return standardDoc + DocumentationMarkup.CONTENT_START + message + DocumentationMarkup.CONTENT_END;
+      }
+
       return null;
     }
 
-    final var bundleName = descriptor.name;
-
-    if (bundleName != null) {
-      return generateGdslDoc(mutableElement, descriptor);
+    // TODO: keep this stuff? Does not seem worth the additional complexity
+    if (descriptor.name() != null) {
+      return getGdslDoc(mutableElement, descriptor);
     }
 
-    mutableElement.putUserData(NonCodeMembersHolder.DOCUMENTATION, null);
-    final var superDoc = super.generateDoc(mutableElement, originalElement);
-    mutableElement.putUserData(NonCodeMembersHolder.DOCUMENTATION, gdslDoc);
-
-    if (superDoc != null) {
-      final var internalDoc = descriptor.doc != null
-          ? descriptor.doc
-          : "No documentation provided for GDSL ID: <code>" + descriptor.id + "</code>";
-
-      return superDoc +
-             DocumentationMarkup.CONTENT_START +
-             internalDoc +
-             DocumentationMarkup.CONTENT_END;
-    }
-
-    return null;
+    final var standardDoc = getStandardDoc(element, originalElement);
+    final var internalDoc = Objects.requireNonNullElse(descriptor.doc(), "");
+    final var content = DocumentationMarkup.CONTENT_START + internalDoc + DocumentationMarkup.CONTENT_END;
+    return standardDoc != null
+        ? standardDoc + content
+        : content;
   }
 
-  private @Nullable String generateGdslDoc(final @NotNull PsiElement element, final @NotNull Descriptor descriptor) {
+  private @Nullable String getStandardDoc(
+      final @NotNull PsiElement element,
+      final @Nullable PsiElement originalElement) {
+    final var gdslDoc = element.getUserData(NonCodeMembersHolder.DOCUMENTATION);
+
+    element.putUserData(NonCodeMembersHolder.DOCUMENTATION, null);
+    final var doc = super.generateDoc(element, originalElement);
+    element.putUserData(NonCodeMembersHolder.DOCUMENTATION, gdslDoc);
+
+    return doc;
+  }
+
+  // Must be used only if descriptor#name is valid
+  private @Nullable String getGdslDoc(
+      final @NotNull PsiElement element,
+      final @NotNull Descriptor descriptor) {
     final var gdslMethod = JPGdslUtils.getGdslGrMethodOrNull(element);
 
-    if (gdslMethod != null) {
-      final var sb = new StringBuilder(256);
-      final var returnType = gdslMethod.getReturnType();
-      sb.append(DocumentationMarkup.DEFINITION_START);
-
-      if (returnType != null) {
-        final var project = element.getProject();
-        final var type = PsiType.getTypeByName(returnType.getCanonicalText(), project, gdslMethod.getResolveScope());
-        final var resolvedPsiElement = type.resolve();
-        final var refText = JavaDocUtil.getReferenceText(project, resolvedPsiElement);
-        final var presentableText = returnType.getPresentableText();
-        DocumentationManagerUtil.createHyperlink(sb, resolvedPsiElement, refText, presentableText, false, true);
-        sb.append(' ');
-      }
-
-      sb.append(descriptor.name);
-      sb.append(DocumentationMarkup.DEFINITION_END);
-
-      if (descriptor.doc != null) {
-        sb.append(DocumentationMarkup.CONTENT_START);
-        sb.append(descriptor.doc);
-        sb.append(DocumentationMarkup.CONTENT_END);
-      }
-
-      return sb.toString();
+    if (gdslMethod == null) {
+      return null;
     }
 
-    return null;
+    final var sb = new StringBuilder(256);
+    final var returnType = gdslMethod.getReturnType();
+    sb.append(DocumentationMarkup.DEFINITION_START);
+
+    if (returnType != null) {
+      final var project = element.getProject();
+      final var type = PsiType.getTypeByName(returnType.getCanonicalText(), project, gdslMethod.getResolveScope());
+      final var resolvedPsiElement = type.resolve();
+      final var refText = JavaDocUtil.getReferenceText(project, resolvedPsiElement);
+      final var presentableText = returnType.getPresentableText();
+      DocumentationManagerUtil.createHyperlink(sb, resolvedPsiElement, refText, presentableText, false, true);
+      sb.append(' ');
+    }
+
+    sb.append(descriptor.name());
+    sb.append(DocumentationMarkup.DEFINITION_END);
+    sb.append(DocumentationMarkup.CONTENT_START);
+    sb.append(Objects.requireNonNullElse(descriptor.doc(), ""));
+    sb.append(DocumentationMarkup.CONTENT_END);
+    return sb.toString();
   }
 }

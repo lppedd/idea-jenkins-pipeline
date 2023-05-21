@@ -135,21 +135,10 @@ public final class JPGdslService {
     return line.trim();
   }
 
-  public static class Descriptor {
-    public final String id;
-    public final String name;
-    public final String doc;
-    public final boolean getter;
-
-    private Descriptor(
-        final @NotNull String id,
-        final @Nullable String name,
-        final @Nullable String doc,
-        final boolean getter) {
-      this.id = id;
-      this.name = name;
-      this.doc = doc;
-      this.getter = getter;
-    }
-  }
+  public record Descriptor(
+      String id,
+      String name,
+      String doc,
+      boolean getter
+  ) { }
 }
