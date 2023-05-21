@@ -1,6 +1,7 @@
 package com.github.lppedd.idea.jenkins.pipeline.gdsl;
 
 import com.intellij.openapi.components.Service;
+import com.intellij.openapi.diagnostic.Logger;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.w3c.dom.Element;
@@ -20,6 +21,7 @@ import java.util.stream.Collectors;
  */
 @Service(Service.Level.PROJECT)
 public final class JPGdslService {
+  private static final Logger logger = Logger.getInstance(JPGdslService.class);
   private final Map<String, Map<String, Descriptor>> descriptorsRoots = new ConcurrentHashMap<>(16);
 
   public @Nullable Descriptor getDescriptor(
@@ -58,12 +60,19 @@ public final class JPGdslService {
             if (definition instanceof final Element definitionElement) {
               final var id = definitionElement.getAttribute("id");
 
-              if (!id.isBlank()) {
-                final var name = getFirstChildElementTextContent(definitionElement, "name");
-                final var doc = getFirstChildElementTextContent(definitionElement, "doc");
-                final var getter = getFirstChildElementTextContent(definitionElement, "hasGetter");
-                descriptors.put(id, new Descriptor(id, name, doc, !"false".equals(getter)));
+              if (id.isBlank()) {
+                logger.error("Empty internal definition ID");
+                continue;
               }
+
+              if (descriptors.containsKey(id)) {
+                logger.error("Duplicate internal definition ID '%s'".formatted(id));
+              }
+
+              final var name = getFirstChildElementTextContent(definitionElement, "name");
+              final var doc = getFirstChildElementTextContent(definitionElement, "doc");
+              final var getter = getFirstChildElementTextContent(definitionElement, "hasGetter");
+              descriptors.put(id, new Descriptor(id, name, doc, !"false".equals(getter)));
             }
           }
         }
