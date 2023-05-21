@@ -16,6 +16,6 @@ public class JPConstants {
   }
 
   public static class Internal {
-    public static final String LIBRARY = "org.jenkinsci.plugins.workflow.shared.Library";
+    public static final String LIBRARY = "org.jenkinsci.plugins.workflow.libs.Library";
   }
 }
