@@ -69,7 +69,7 @@ public class JPMapContentProvider extends GroovyMapContentProvider {
 
       if (JPUtils.isJenkinsfile(qualifier.getContainingFile())) {
         // Collect environment variables from "environment" sections
-        getEnvVars(qualifier, variants);
+        collectEnvVars(qualifier, variants);
       }
 
       variants.addAll(ENV_DEFAULTS);
@@ -134,7 +134,7 @@ public class JPMapContentProvider extends GroovyMapContentProvider {
     return false;
   }
 
-  private void getEnvVars(final @NotNull PsiElement element, final @NotNull Collection<String> variants) {
+  private void collectEnvVars(final @NotNull PsiElement element, final @NotNull Collection<String> variants) {
     final var stageMethodCall = PsiTreeUtil.findFirstParent(element, true, e -> {
       if (e instanceof final GrMethodCall call) {
         final var method = call.resolveMethod();
@@ -145,8 +145,8 @@ public class JPMapContentProvider extends GroovyMapContentProvider {
     });
 
     if (stageMethodCall != null) {
-      getSectionEnvVars(stageMethodCall, variants);
-      getEnvVars(stageMethodCall, variants);
+      collectSectionEnvVars(stageMethodCall, variants);
+      collectEnvVars(stageMethodCall, variants);
     }
 
     final var pipelineMethodCall = PsiTreeUtil.findFirstParent(element, true, e -> {
@@ -159,11 +159,11 @@ public class JPMapContentProvider extends GroovyMapContentProvider {
     });
 
     if (pipelineMethodCall != null) {
-      getSectionEnvVars(pipelineMethodCall, variants);
+      collectSectionEnvVars(pipelineMethodCall, variants);
     }
   }
 
-  private void getSectionEnvVars(final @NotNull PsiElement element, final @NotNull Collection<String> variants) {
+  private void collectSectionEnvVars(final @NotNull PsiElement element, final @NotNull Collection<String> variants) {
     final var sectionClosure = PsiTreeUtil.getChildOfType(element, GrClosableBlock.class);
 
     // Inside the section, e.g., "stage" or "pipeline", let's look for the "environment" section
