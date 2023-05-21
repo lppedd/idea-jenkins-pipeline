@@ -33,12 +33,12 @@ public class JPLibraryType extends LibraryType<DummyLibraryProperties> {
   }
 
   @Override
-  public @Nullable Icon getIcon(final @Nullable DummyLibraryProperties properties) {
-    return JPIcons.JENKINS_NOMARGIN;
+  public @NotNull Icon getIcon(final @Nullable DummyLibraryProperties properties) {
+    return JPIcons.JENKINS_NOMARGINS;
   }
 
   @Override
-  public @Nullable NewLibraryConfiguration createNewLibrary(
+  public @NotNull NewLibraryConfiguration createNewLibrary(
       final @NotNull JComponent parentComponent,
       final @Nullable VirtualFile contextDirectory,
       final @NotNull Project project) {

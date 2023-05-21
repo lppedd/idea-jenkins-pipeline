@@ -1,10 +1,10 @@
 {
   "icons": {
     "expui": {
-      "matrix-stages.svg": "icons/matrix-stages.svg",
-      "matrix-stages_dark.svg": "icons/matrix-stages_dark.svg",
-      "parallel-stages.svg": "icons/parallel-stages.svg",
-      "parallel-stages_dark.svg": "icons/parallel-stages_dark.svg",
+      "matrix.svg": "icons/matrix.svg",
+      "matrix_dark.svg": "icons/matrix_dark.svg",
+      "parallelStages.svg": "icons/parallelStages.svg",
+      "parallelStages_dark.svg": "icons/parallelStages_dark.svg",
       "stage.svg": "icons/stage.svg",
       "stage_dark.svg": "icons/stage_dark.svg"
     }
