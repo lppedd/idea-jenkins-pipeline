@@ -44,41 +44,25 @@ public class JPPipelinePsiTreeElement extends JPPsiTreeElementBase<GrMethodCall>
     }
 
     final var treeElements = new ArrayList<StructureViewTreeElement>(16);
-    treeElements.addAll(getAgent(pipelineClosure));
-    treeElements.addAll(getParameters(pipelineClosure));
-    treeElements.addAll(getEnvironment(pipelineClosure));
-    treeElements.addAll(getStages(pipelineClosure));
+    treeElements.addAll(getMethodCalls(pipelineClosure, "agent", JPAgentPsiTreeElement::new));
+    treeElements.addAll(getMethodCalls(pipelineClosure, "parameters", JPParametersPsiTreeElement::new));
+    treeElements.addAll(getMethodCalls(pipelineClosure, "environment", JPEnvironmentPsiTreeElement::new));
+    treeElements.addAll(getMethodCalls(pipelineClosure, "stages", JPStagesPsiTreeElement::new));
     return treeElements;
-  }
-
-  private static @NotNull List<StructureViewTreeElement> getAgent(final @NotNull GrClosableBlock pipelineClosure) {
-    return getMethodCalls(pipelineClosure, "agent", JPAgentPsiTreeElement::new);
-  }
-
-  private static @NotNull List<StructureViewTreeElement> getParameters(final @NotNull GrClosableBlock pipelineClosure) {
-    return getMethodCalls(pipelineClosure, "parameters", JPParametersPsiTreeElement::new);
-  }
-
-  private static @NotNull List<StructureViewTreeElement> getEnvironment(final @NotNull GrClosableBlock pipelineClosure) {
-    return getMethodCalls(pipelineClosure, "environment", JPEnvironmentPsiTreeElement::new);
-  }
-
-  private static @NotNull List<StructureViewTreeElement> getStages(final @NotNull GrClosableBlock pipelineClosure) {
-    return getMethodCalls(pipelineClosure, "stages", JPStagesPsiTreeElement::new);
   }
 
   private static @NotNull List<StructureViewTreeElement> getMethodCalls(
       final @NotNull GrClosableBlock pipelineClosure,
-      final @NotNull String parameters,
-      final @NotNull Function<GrMethodCall, StructureViewTreeElement> ctor) {
+      final @NotNull String sectionName,
+      final @NotNull Function<GrMethodCall, StructureViewTreeElement> producer) {
     final var methodCalls = JPPsiUtils.getChildrenOfType(
         pipelineClosure,
         GrMethodCall.class,
-        mc -> parameters.equals(JPGdslUtils.getInvokedMethodName(mc))
+        mc -> sectionName.equals(JPGdslUtils.getInvokedMethodName(mc))
     );
 
     return methodCalls.stream()
-        .map(ctor)
+        .map(producer)
         .collect(Collectors.toList());
   }
 }
