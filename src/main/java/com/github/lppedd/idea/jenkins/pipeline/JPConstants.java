@@ -11,8 +11,9 @@ public class JPConstants {
   }
 
   public static class Classes {
-    public static final String STRING = "java.lang.String";
     public static final String GSTRING = "groovy.lang.GString";
+    public static final String STRING = "java.lang.String";
+    public static final String BOOLEAN = "java.lang.Boolean";
   }
 
   public static class Internal {

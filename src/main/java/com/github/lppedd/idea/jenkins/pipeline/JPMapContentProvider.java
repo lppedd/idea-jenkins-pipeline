@@ -13,6 +13,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.plugins.groovy.extensions.GroovyMapContentProvider;
 import org.jetbrains.plugins.groovy.lang.psi.api.statements.blocks.GrClosableBlock;
+import org.jetbrains.plugins.groovy.lang.psi.api.statements.expressions.GrAssignmentExpression;
 import org.jetbrains.plugins.groovy.lang.psi.api.statements.expressions.GrExpression;
 import org.jetbrains.plugins.groovy.lang.psi.api.statements.expressions.GrMethodCall;
 import org.jetbrains.plugins.groovy.lang.psi.api.statements.expressions.literals.GrLiteral;
@@ -26,37 +27,37 @@ import java.util.stream.Collectors;
  * @author Edoardo Luppi
  */
 public class JPMapContentProvider extends GroovyMapContentProvider {
-  private final Map<String, String> envDefaults = Map.ofEntries(
-      Map.entry("BRANCH_NAME", "java.lang.String"),
-      Map.entry("CHANGE_ID", "java.lang.String"),
-      Map.entry("CHANGE_URL", "java.lang.String"),
-      Map.entry("CHANGE_TITLE", "java.lang.String"),
-      Map.entry("CHANGE_AUTHOR", "java.lang.String"),
-      Map.entry("CHANGE_AUTHOR_DISPLAY_NAME", "java.lang.String"),
-      Map.entry("CHANGE_AUTHOR_EMAIL", "java.lang.String"),
-      Map.entry("CHANGE_TARGET", "java.lang.String"),
-      Map.entry("BUILD_NUMBER", "java.lang.String"),
-      Map.entry("BUILD_ID", "java.lang.String"),
-      Map.entry("BUILD_DISPLAY_NAME", "java.lang.String"),
-      Map.entry("JOB_NAME", "java.lang.String"),
-      Map.entry("JOB_BASE_NAME", "java.lang.String"),
-      Map.entry("BUILD_TAG", "java.lang.String"),
-      Map.entry("EXECUTOR_NUMBER", "java.lang.String"),
-      Map.entry("NODE_NAME", "java.lang.String"),
-      Map.entry("NODE_LABELS", "java.lang.String"),
-      Map.entry("WORKSPACE", "java.lang.String"),
-      Map.entry("JENKINS_HOME", "java.lang.String"),
-      Map.entry("JENKINS_URL", "java.lang.String"),
-      Map.entry("BUILD_URL", "java.lang.String"),
-      Map.entry("JOB_URL", "java.lang.String")
+  private static final Set<String> ENV_DEFAULTS = Set.of(
+      "BRANCH_NAME",
+      "CHANGE_ID",
+      "CHANGE_URL",
+      "CHANGE_TITLE",
+      "CHANGE_AUTHOR",
+      "CHANGE_AUTHOR_DISPLAY_NAME",
+      "CHANGE_AUTHOR_EMAIL",
+      "CHANGE_TARGET",
+      "BUILD_NUMBER",
+      "BUILD_ID",
+      "BUILD_DISPLAY_NAME",
+      "JOB_NAME",
+      "JOB_BASE_NAME",
+      "BUILD_TAG",
+      "EXECUTOR_NUMBER",
+      "NODE_NAME",
+      "NODE_LABELS",
+      "WORKSPACE",
+      "JENKINS_HOME",
+      "JENKINS_URL",
+      "BUILD_URL",
+      "JOB_URL"
   );
 
-  private final Map<String, String> paramMethods = Map.ofEntries(
-      Map.entry("booleanParam", "java.lang.Boolean"),
-      Map.entry("string", "java.lang.String"),
-      Map.entry("text", "java.lang.String"),
-      Map.entry("choice", "java.lang.String"),
-      Map.entry("password", "java.lang.String")
+  private static final Map<String, String> PARAM_METHODS = Map.ofEntries(
+      Map.entry("booleanParam", JPConstants.Classes.BOOLEAN),
+      Map.entry("string", JPConstants.Classes.STRING),
+      Map.entry("text", JPConstants.Classes.STRING),
+      Map.entry("choice", JPConstants.Classes.STRING),
+      Map.entry("password", JPConstants.Classes.STRING)
   );
 
   @Override
@@ -64,7 +65,15 @@ public class JPMapContentProvider extends GroovyMapContentProvider {
       final @NotNull GrExpression qualifier,
       final @Nullable PsiElement resolve) {
     if (isEnvObject(resolve)) {
-      return envDefaults.keySet();
+      final var variants = new LinkedHashSet<String>(64);
+
+      if (JPUtils.isJenkinsfile(qualifier.getContainingFile())) {
+        // Collect environment variables from "environment" sections
+        getEnvVars(qualifier, variants);
+      }
+
+      variants.addAll(ENV_DEFAULTS);
+      return variants;
     }
 
     if (JPUtils.isJenkinsfile(qualifier.getContainingFile()) && isParamsObject(resolve)) {
@@ -82,17 +91,13 @@ public class JPMapContentProvider extends GroovyMapContentProvider {
       final @Nullable PsiElement resolve,
       final @NotNull String key) {
     final var elementFactory = JavaPsiFacade.getElementFactory(qualifier.getProject());
-    final var trimmedKey = key.trim();
 
     if (isEnvObject(resolve)) {
-      final var classFQN = envDefaults.get(trimmedKey);
-
-      if (classFQN != null) {
-        return elementFactory.createTypeByFQClassName(classFQN, qualifier.getResolveScope());
-      }
+      return elementFactory.createTypeByFQClassName(JPConstants.Classes.STRING, qualifier.getResolveScope());
     }
 
     if (JPUtils.isJenkinsfile(qualifier.getContainingFile()) && isParamsObject(resolve)) {
+      final var trimmedKey = key.trim();
       return getParameters(qualifier).stream()
           .filter(pair -> pair.getFirst().equals(trimmedKey))
           .findFirst()
@@ -129,6 +134,56 @@ public class JPMapContentProvider extends GroovyMapContentProvider {
     return false;
   }
 
+  private void getEnvVars(final @NotNull PsiElement element, final @NotNull Collection<String> variants) {
+    final var stageMethodCall = PsiTreeUtil.findFirstParent(element, true, e -> {
+      if (e instanceof final GrMethodCall call) {
+        final var method = call.resolveMethod();
+        return JPGdslUtils.isGdslGrMethod(method) && "stage".equals(method.getName());
+      }
+
+      return false;
+    });
+
+    if (stageMethodCall != null) {
+      getSectionEnvVars(stageMethodCall, variants);
+      getEnvVars(stageMethodCall, variants);
+    }
+
+    final var pipelineMethodCall = PsiTreeUtil.findFirstParent(element, true, e -> {
+      if (e instanceof final GrMethodCall call) {
+        final var method = call.resolveMethod();
+        return JPGdslUtils.isGdslGrMethod(method) && "pipeline".equals(method.getName());
+      }
+
+      return false;
+    });
+
+    if (pipelineMethodCall != null) {
+      getSectionEnvVars(pipelineMethodCall, variants);
+    }
+  }
+
+  private void getSectionEnvVars(final @NotNull PsiElement element, final @NotNull Collection<String> variants) {
+    final var sectionClosure = PsiTreeUtil.getChildOfType(element, GrClosableBlock.class);
+
+    // Inside the section, e.g., "stage" or "pipeline", let's look for the "environment" section
+    final var environmentMethodCalls = JPPsiUtils.getChildrenOfType(sectionClosure, GrMethodCall.class, mc -> {
+      final var invokedMethodName = JPGdslUtils.getInvokedMethodName(mc);
+      return "environment".equals(invokedMethodName);
+    });
+
+    for (final var environmentMethodCall : environmentMethodCalls) {
+      final var environmentClosure = PsiTreeUtil.getChildOfType(environmentMethodCall, GrClosableBlock.class);
+      final var environmentAssignments = PsiTreeUtil.getChildrenOfType(environmentClosure, GrAssignmentExpression.class);
+
+      if (environmentAssignments != null) {
+        for (final var assignment : environmentAssignments) {
+          variants.add(assignment.getLValue().getText());
+        }
+      }
+    }
+  }
+
   private @NotNull List<Pair<String, String>> getParameters(final @NotNull PsiElement element) {
     // Get the first "pipeline" method call going up the tree.
     // We will then navigate down again to find the "parameters" method call
@@ -162,7 +217,7 @@ public class JPMapContentProvider extends GroovyMapContentProvider {
       final var method = parameterMethodCall.resolveMethod();
 
       if (JPGdslUtils.isGdslGrMethod(method)) {
-        final var classFQN = paramMethods.get(method.getName());
+        final var classFQN = PARAM_METHODS.get(method.getName());
 
         if (classFQN != null) {
           final var argumentList = parameterMethodCall.getArgumentList();
