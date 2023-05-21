@@ -1,21 +1,225 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<gdsl>
+<gdsl xmlns="http://www.namespace.org/idea-jenkins-pipeline">
   <definitions>
     <definition id="env">
       <doc>A map of all available environment variables.</doc>
-      <getter>false</getter>
+      <hasGetter>false</hasGetter>
     </definition>
     <definition id="agent">
-      <doc>
-        <![CDATA[
+      <doc><![CDATA[
+        The <code>agent</code> section specifies where the entire pipeline, or a specific stage,
+        will execute in the Jenkins environment, depending on where the agent section is defined.
         <p>
-        The <code>agent</code> section specifies where the entire Pipeline, or a specific stage,
-        will execute in the Jenkins environment depending on where the agent section is placed.
+          The section <strong>must</strong> be defined at the top-level inside the <code>pipeline</code>
+          block, but <code>stage</code>-level usage is optional.
         </p>
+        ]]>
+      </doc>
+    </definition>
+    <definition id="pipeline">
+      <doc>The root element of a declarative pipeline.</doc>
+    </definition>
+    <definition id="agent.any">
+      <doc><![CDATA[
+        Execute the pipeline, or stage, on any available agent.
+        <p>For example: <code>agent any</code></p>
+        ]]>
+      </doc>
+    </definition>
+    <definition id="agent.none">
+      <doc><![CDATA[
+        When applied at the top-level of the <code>pipeline</code> block no global agent
+        will be allocated for the entire pipeline run, and each <code>stage</code> section
+        will need to contain its own <code>agent</code> section.
+        <p>For example: <code>agent none</code></p>
+        ]]>
+      </doc>
+    </definition>
+    <definition id="agent.label">
+      <doc><![CDATA[
+        Execute the pipeline, or stage, on an agent available in the Jenkins environment
+        with the provided label.
+        <p>For example:
+        <pre>
+          |agent {
+          |  label 'my-defined-label'
+          |}
+        </pre>
+        </p>
+        ]]>
+      </doc>
+    </definition>
+    <definition id="agent.node">
+      <doc><![CDATA[
+        <pre>
+          |agent {
+          |  node {
+          |    label 'labelName'
+          |  }
+          |}
+        </pre>
+        behaves the same as
+        <pre>
+          |agent {
+          |  label 'labelName'
+          |}
+        </pre>
+        but <code>node</code> allows for additional options (such as <code>customWorkspace</code>).
+        ]]>
+      </doc>
+    </definition>
+    <definition id="agent.node.customWorkspace">
+      <doc><![CDATA[
+        Run the pipeline or individual stage this agent is applied to within this custom workspace,
+        rather than the default.
         <p>
-          The section must be defined at the top-level inside the <code>pipeline</code> block,
-          but stage-level usage is optional.
+          It can be either a relative path, in which case the custom workspace will be under
+          the workspace root on the node, or an absolute path.
         </p>
+        ]]>
+      </doc>
+    </definition>
+    <definition id="tools">
+      <doc><![CDATA[
+        A section defining tools to auto-install and to put on the <code>PATH</code>.<br>
+        This is ignored if <code>agent none</code> is specified.
+        ]]>
+      </doc>
+    </definition>
+    <definition id="tools.jdk">
+      <doc><![CDATA[
+        The JDK distribution to use for this <code>pipeline</code> or <code>stage</code>.
+        ]]>
+      </doc>
+    </definition>
+    <definition id="tools.maven">
+      <doc><![CDATA[
+        The Maven distribution to use for this <code>pipeline</code> or <code>stage</code>.
+        ]]>
+      </doc>
+    </definition>
+    <definition id="tools.gradle">
+      <doc><![CDATA[
+        The Gradle distribution to use for this <code>pipeline</code> or <code>stage</code>.
+        ]]>
+      </doc>
+    </definition>
+    <definition id="options">
+      <doc><![CDATA[
+        The <code>options</code> directive allows configuring pipeline-specific options from within the pipeline itself.
+        The pipeline provides a number of these options, such as <code>buildDiscarder</code>, but they may also be
+        provided by plugins, such as <code>timestamps</code>.
+        ]]>
+      </doc>
+    </definition>
+    <definition id="environment">
+      <doc><![CDATA[
+        The <code>environment</code> directive specifies a sequence of key-value pairs which will be defined
+        as environment variables for all steps, or stage-specific steps, depending on where the <code>environment</code>
+        directive is located within the pipeline.
+        <p>
+          This directive supports a special helper method <code>credentials()</code> which can be used to access
+          pre-defined Credentials by their identifier in the Jenkins environment.
+        </p>
+        ]]>
+      </doc>
+    </definition>
+    <definition id="stages">
+      <doc><![CDATA[
+        A container for <code>stage</code> sections.
+        ]]>
+      </doc>
+    </definition>
+    <definition id="post">
+      <doc><![CDATA[
+        The <code>post</code> section defines one or more additional steps that are run upon the completion
+        of a pipeline's or stage's run (depending on the location of the post section within the pipeline).
+        <code>post</code> can support, and executes in this exact order, any of the following post-condition blocks:
+        <ul>
+          <li><code>always</code></li>
+          <li><code>changed</code></li>
+          <li><code>fixed</code></li>
+          <li><code>regression</code></li>
+          <li><code>aborted</code></li>
+          <li><code>failure</code></li>
+          <li><code>success</code></li>
+          <li><code>unstable</code></li>
+          <li><code>unsuccessful</code></li>
+          <li><code>cleanup</code></li>
+        </ul>
+        These condition blocks allow the execution of steps inside each condition depending on the completion
+        status of the pipeline or stage.
+        ]]>
+      </doc>
+    </definition>
+    <definition id="post.always">
+      <doc><![CDATA[
+        Run the steps in the <code>post</code> section regardless of the completion status of
+        the pipeline's or stage's run.
+        ]]>
+      </doc>
+    </definition>
+    <definition id="post.changed">
+      <doc><![CDATA[
+        Only run the steps in <code>post</code> if the current pipeline's run has a different
+        completion status from its previous run.
+        ]]>
+      </doc>
+    </definition>
+    <definition id="post.fixed">
+      <doc><![CDATA[
+        Only run the steps in <code>post</code> if the current pipeline's run is successful
+        and the previous run failed or was unstable.
+        ]]>
+      </doc>
+    </definition>
+    <definition id="post.regression">
+      <doc><![CDATA[
+        Only run the steps in <code>post</code> if the current pipeline's or status is failure,
+        unstable, or aborted and the previous run was successful.
+        ]]>
+      </doc>
+    </definition>
+    <definition id="post.aborted">
+      <doc><![CDATA[
+        Only run the steps in <code>post</code> if the current pipeline's run has an "aborted" status,
+        usually due to the pipeline being manually aborted. This is typically denoted by gray in the web UI.
+        ]]>
+      </doc>
+    </definition>
+    <definition id="post.failure">
+      <doc><![CDATA[
+        Only run the steps in <code>post</code> if the current pipeline's or stage's run has a "failed" status,
+        typically denoted by red in the web UI.
+        ]]>
+      </doc>
+    </definition>
+    <definition id="post.success">
+      <doc><![CDATA[
+        Only run the steps in <code>post</code> if the current pipeline's or stage's run has a "success" status,
+        typically denoted by blue or green in the web UI.
+        ]]>
+      </doc>
+    </definition>
+    <definition id="post.unstable">
+      <doc><![CDATA[
+        Only run the steps in <code>post</code> if the current pipeline's run has an "unstable" status,
+        usually caused by test failures, code violations, etc. This is typically denoted by yellow in the web UI.
+        ]]>
+      </doc>
+    </definition>
+    <definition id="post.unsuccessful">
+      <doc><![CDATA[
+        Only run the steps in <code>post</code> if the current pipeline's or stage's run has not a "success" status.
+        This is typically denoted in the web UI depending on the status previously mentioned
+        (for stages this may fire if the build itself is unstable).
+        ]]>
+      </doc>
+    </definition>
+    <definition id="post.cleanup">
+      <doc><![CDATA[
+        Run the steps in this <code>post</code> condition after every other post condition has been evaluated,
+        regardless of the pipeline or stage's status.
         ]]>
       </doc>
     </definition>
